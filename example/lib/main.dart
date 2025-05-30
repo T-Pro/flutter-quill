@@ -66,14 +66,21 @@ class _HomePageState extends State<HomePage> {
       ),
     ));
   }();
-  final FocusNode _editorFocusNode = FocusNode();
+  final QuillFocusNode _editorFocusNode = QuillFocusNode();
   final ScrollController _editorScrollController = ScrollController();
+
+  late final ValueNotifier<bool> _editorFocusNodeEnabled =
+      ValueNotifier(_editorFocusNode.keyboardEnabled);
 
   @override
   void initState() {
     super.initState();
     // Load document
     _controller.document = Document.fromJson(kQuillDefaultSample);
+    // Add listener to update the editor focus node enabled state.
+    _editorFocusNodeEnabled.addListener(() {
+      _editorFocusNode.keyboardEnabled = _editorFocusNodeEnabled.value;
+    });
   }
 
   @override
@@ -90,6 +97,38 @@ class _HomePageState extends State<HomePage> {
                   content:
                       Text('The JSON Delta has been printed to the console.')));
               debugPrint(jsonEncode(_controller.document.toDelta().toJson()));
+            },
+          ),
+          ValueListenableBuilder<bool>(
+            valueListenable: _editorFocusNodeEnabled,
+            builder: (context, hasFocus, child) {
+              final isDark = Theme.of(context).brightness == Brightness.dark;
+              final bool enabled = _editorFocusNodeEnabled.value;
+              final Color backgroundColor = enabled
+                  ? (isDark ? Colors.white : Colors.black)
+                  : Colors.transparent;
+              final Color iconColor = enabled
+                  ? (isDark ? Colors.black : Colors.white)
+                  : (isDark ? Colors.white : Colors.black);
+
+              return IconButton(
+                icon: Container(
+                  decoration: BoxDecoration(
+                    color: backgroundColor,
+                    shape: BoxShape.circle,
+                  ),
+                  padding: const EdgeInsets.all(6),
+                  child: Icon(
+                    Icons.edit,
+                    color: iconColor,
+                  ),
+                ),
+                tooltip: 'Toggle edit mode',
+                onPressed: () {
+                  _editorFocusNodeEnabled.value =
+                      !_editorFocusNodeEnabled.value;
+                },
+              );
             },
           ),
         ],

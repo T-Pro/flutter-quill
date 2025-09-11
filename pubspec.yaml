@@ -1,6 +1,6 @@
 name: flutter_quill
 description: "A rich text editor built for Android, iOS, Web, and desktop platforms. It's the WYSIWYG editor and a Quill component for Flutter."
-version: 11.4.2
+version: 11.5.0
 homepage: https://github.com/singerdmx/flutter-quill/
 repository: https://github.com/singerdmx/flutter-quill/
 issue_tracker: https://github.com/singerdmx/flutter-quill/issues/
@@ -72,6 +72,47 @@ dev_dependencies:
   http: ^1.2.1
 
   path: any
+dependency_overrides:
+  quill_native_bridge:
+    git:
+      url: https://github.com/T-Pro/quill-native-bridge.git
+      ref: feature/removeXclip
+      path: quill_native_bridge
+  quill_native_bridge_platform_interface:
+    git:
+      url: https://github.com/T-Pro/quill-native-bridge.git
+      ref: feature/removeXclip
+      path: quill_native_bridge_platform_interface
+  quill_native_bridge_android:
+    git:
+      url: https://github.com/T-Pro/quill-native-bridge.git
+      ref: feature/removeXclip
+      path: quill_native_bridge_android
+  quill_native_bridge_ios:
+    git:
+      url: https://github.com/T-Pro/quill-native-bridge.git
+      ref: feature/removeXclip
+      path: quill_native_bridge_ios
+  quill_native_bridge_linux:
+    git:
+      url: https://github.com/T-Pro/quill-native-bridge.git
+      ref: feature/removeXclip
+      path: quill_native_bridge_linux
+  quill_native_bridge_macos:
+    git:
+      url: https://github.com/T-Pro/quill-native-bridge.git
+      ref: feature/removeXclip
+      path: quill_native_bridge_macos
+  quill_native_bridge_web:
+    git:
+      url: https://github.com/T-Pro/quill-native-bridge.git
+      ref: feature/removeXclip
+      path: quill_native_bridge_web
+  quill_native_bridge_windows:
+    git:
+      url: https://github.com/T-Pro/quill-native-bridge.git
+      ref: feature/removeXclip
+      path: quill_native_bridge_windows
 flutter:
   uses-material-design: true
   generate: true

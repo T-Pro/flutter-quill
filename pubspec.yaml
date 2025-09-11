@@ -53,10 +53,11 @@ dependencies:
   # Plugins
   url_launcher: ^6.2.1
   flutter_keyboard_visibility_temp_fork: ^0.1.1
-  quill_native_bridge_workspace:
+  quill_native_bridge:
     git:
       url: https://github.com/T-Pro/quill-native-bridge.git
       ref: feature/removeXclip
+      path: quill_native_bridge
 
 dev_dependencies:
   flutter_lints: ^5.0.0

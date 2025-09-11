@@ -6,6 +6,7 @@ repository: https://github.com/singerdmx/flutter-quill/
 issue_tracker: https://github.com/singerdmx/flutter-quill/issues/
 documentation: https://github.com/singerdmx/flutter-quill/
 topics: [editor, text, rich-text-editor, quill, flutter-quill]
+publish_to: none
 
 screenshots:
   - description: "iOS Light Mode"
@@ -52,7 +53,10 @@ dependencies:
   # Plugins
   url_launcher: ^6.2.1
   flutter_keyboard_visibility_temp_fork: ^0.1.1
-  quill_native_bridge: ^11.0.0
+  quill_native_bridge:
+    git:
+      url: https://github.com/T-Pro/quill-native-bridge.git
+      ref: feature/removeXclip
 
 dev_dependencies:
   flutter_lints: ^5.0.0

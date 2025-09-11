@@ -7,6 +7,7 @@ import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
 import 'package:meta/meta.dart';
 
+import '../../../flutter_quill.dart';
 import '../../delta/delta_diff.dart';
 import '../../document/document.dart';
 import '../editor.dart';
@@ -113,7 +114,19 @@ mixin RawEditorStateTextInputClientMixin on EditorState
       }
       _textInputConnection!.setEditingState(_lastKnownRemoteTextEditingValue!);
     }
-    _textInputConnection!.show();
+    // If the keyboard is disabled, only request focus for the editor's focus 
+    // node and do not open or show the software keyboard.
+    if (_keyboardEnabled) {
+      _textInputConnection!.show();
+    }
+  }
+
+  bool get _keyboardEnabled {
+    if (widget.config.focusNode is QuillFocusNode) {
+      final focusNode = widget.config.focusNode as QuillFocusNode;
+      return focusNode.keyboardEnabled;
+    }
+    return true;
   }
 
   void _updateComposingRectIfNeeded() {

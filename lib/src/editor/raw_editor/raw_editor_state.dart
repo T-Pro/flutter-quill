@@ -1090,6 +1090,9 @@ class QuillRawEditorState extends EditorState
   }
 
   void _handleFocusChanged() {
+    if (!mounted) {
+      return;
+    }
     if (dirty) {
       requestKeyboard();
       SchedulerBinding.instance

@@ -233,5 +233,61 @@ void main() {
         );
       },
     );
+
+    testWidgets(
+      'does not throw if disposed while a focus retry is pending',
+      (tester) async {
+        final focusNode = FocusNode();
+        final scrollController = ScrollController();
+
+        await tester.pumpWidget(
+          MaterialApp(
+            home: QuillEditor(
+              focusNode: focusNode,
+              scrollController: scrollController,
+              controller: controller,
+              config: const QuillEditorConfig(),
+            ),
+          ),
+        );
+
+        focusNode.requestFocus();
+        await tester.pump();
+
+        // Mark the editor dirty without pumping so the next focus
+        // notification schedules a post-frame retry.
+        controller.replaceText(
+          0,
+          0,
+          'hello',
+          const TextSelection.collapsed(offset: 5),
+        );
+
+        final editorState =
+            tester.state<QuillRawEditorState>(find.byType(QuillRawEditor));
+        expect(editorState.dirty, isTrue);
+
+        // Fire the focus listener while dirty so _handleFocusChanged
+        // queues another attempt for the next frame.
+        focusNode.notifyListeners();
+
+        // Dispose the editor but keep the same FocusNode focused so the
+        // queued retry still reaches requestKeyboard() on a dead context.
+        await tester.pumpWidget(
+          MaterialApp(
+            home: Focus(
+              autofocus: true,
+              focusNode: focusNode,
+              child: const SizedBox.shrink(),
+            ),
+          ),
+        );
+
+        expect(tester.takeException(), isNull);
+
+        focusNode.dispose();
+        scrollController.dispose();
+      },
+    );
   });
 }

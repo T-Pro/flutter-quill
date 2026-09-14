@@ -1090,6 +1090,9 @@ class QuillRawEditorState extends EditorState
   }
 
   void _handleFocusChanged() {
+    if (!mounted) {
+      return;
+    }
     if (dirty) {
       requestKeyboard();
       SchedulerBinding.instance
@@ -1296,4 +1299,7 @@ class QuillRawEditorState extends EditorState
 
   @override
   bool get shareEnabled => false;
+  
+  @override
+  bool onFocusReceived() => false;
 }

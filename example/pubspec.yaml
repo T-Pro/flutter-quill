@@ -32,6 +32,46 @@ dependency_overrides:
     path: ../flutter_quill_extensions
   flutter_quill_test:
     path: ../flutter_quill_test
+  quill_native_bridge:
+    git:
+      url: https://github.com/T-Pro/quill-native-bridge.git
+      ref: feature/removeXclip
+      path: quill_native_bridge
+  quill_native_bridge_platform_interface:
+    git:
+      url: https://github.com/T-Pro/quill-native-bridge.git
+      ref: feature/removeXclip
+      path: quill_native_bridge_platform_interface
+  quill_native_bridge_android:
+    git:
+      url: https://github.com/T-Pro/quill-native-bridge.git
+      ref: feature/removeXclip
+      path: quill_native_bridge_android
+  quill_native_bridge_ios:
+    git:
+      url: https://github.com/T-Pro/quill-native-bridge.git
+      ref: feature/removeXclip
+      path: quill_native_bridge_ios
+  quill_native_bridge_linux:
+    git:
+      url: https://github.com/T-Pro/quill-native-bridge.git
+      ref: feature/removeXclip
+      path: quill_native_bridge_linux
+  quill_native_bridge_macos:
+    git:
+      url: https://github.com/T-Pro/quill-native-bridge.git
+      ref: feature/removeXclip
+      path: quill_native_bridge_macos
+  quill_native_bridge_web:
+    git:
+      url: https://github.com/T-Pro/quill-native-bridge.git
+      ref: feature/removeXclip
+      path: quill_native_bridge_web
+  quill_native_bridge_windows:
+    git:
+      url: https://github.com/T-Pro/quill-native-bridge.git
+      ref: feature/removeXclip
+      path: quill_native_bridge_windows
 
 flutter:
   uses-material-design: true

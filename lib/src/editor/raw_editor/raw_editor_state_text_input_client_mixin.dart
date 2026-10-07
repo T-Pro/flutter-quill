@@ -5,13 +5,9 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
-import 'package:meta/meta.dart';
 
 import '../../../flutter_quill.dart';
 import '../../delta/delta_diff.dart';
-import '../../document/document.dart';
-import '../editor.dart';
-import 'raw_editor.dart';
 
 mixin RawEditorStateTextInputClientMixin on EditorState
     implements TextInputClient {

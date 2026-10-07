@@ -1,1 +1,6 @@
 include: package:flutter_lints/flutter.yaml
+
+analyzer:
+  errors:
+    # Example intentionally demos experimental clipboard APIs.
+    experimental_member_use: ignore

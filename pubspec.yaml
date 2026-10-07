@@ -64,6 +64,7 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_quill_test: ^11.1.0
+  leak_tracker_flutter_testing: any
   test: ^1.24.3
 
   # For scripts only
@@ -73,6 +74,8 @@ dev_dependencies:
 
   path: any
 dependency_overrides:
+  flutter_quill_test:
+    path: flutter_quill_test
   quill_native_bridge:
     git:
       url: https://github.com/T-Pro/quill-native-bridge.git

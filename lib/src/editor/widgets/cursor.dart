@@ -166,6 +166,7 @@ class CursorCont extends ChangeNotifier {
     show.dispose();
     blink.dispose();
     color.dispose();
+    _floatingCursorTextPosition.dispose();
     assert(_cursorTimer == null);
     super.dispose();
   }

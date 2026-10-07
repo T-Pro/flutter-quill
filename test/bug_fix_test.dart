@@ -57,17 +57,21 @@ void main() {
 
     group('1189 - The provided text position is not in the current node', () {
       late QuillController controller;
+      late FocusNode focusNode;
       late QuillEditor editor;
 
       setUp(() {
         controller = QuillController.basic();
+        focusNode = FocusNode();
         editor = QuillEditor.basic(
           controller: controller,
+          focusNode: focusNode,
         );
       });
 
       tearDown(() {
         controller.dispose();
+        focusNode.dispose();
       });
 
       testWidgets('Refocus editor after controller clears document',
@@ -81,10 +85,10 @@ void main() {
         );
         await tester.quillEnterText(find.byType(QuillEditor), 'test\n');
 
-        editor.focusNode.unfocus();
+        focusNode.unfocus();
         await tester.pump();
         controller.clear();
-        editor.focusNode.requestFocus();
+        focusNode.requestFocus();
         await tester.pump();
         expect(tester.takeException(), isNull);
       });
@@ -99,10 +103,10 @@ void main() {
         await tester.quillEnterText(find.byType(QuillEditor), 'test\n');
 
         controller.formatSelection(Attribute.ul);
-        editor.focusNode.unfocus();
+        focusNode.unfocus();
         await tester.pump();
         controller.formatSelection(const ListAttribute(null));
-        editor.focusNode.requestFocus();
+        focusNode.requestFocus();
         await tester.pump();
         expect(tester.takeException(), isNull);
       });
@@ -118,7 +122,7 @@ void main() {
         await tester.quillEnterText(find.byType(QuillEditor), 'test\n');
 
         controller.formatSelection(Attribute.unchecked);
-        editor.focusNode.unfocus();
+        focusNode.unfocus();
         await tester.pump();
         await tester.tap(find.byType(QuillCheckboxPoint));
         expect(tester.takeException(), isNull);

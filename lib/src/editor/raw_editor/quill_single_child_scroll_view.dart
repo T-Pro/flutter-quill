@@ -263,6 +263,8 @@ class _RenderSingleChildViewport extends RenderBox
   @override
   void applyPaintTransform(RenderBox child, Matrix4 transform) {
     final paintOffset = _paintOffset;
+    // ponytail: translateByDouble needs Flutter 3.32; SDK floor is 3.0
+    // ignore: deprecated_member_use
     transform.translate(paintOffset.dx, paintOffset.dy);
   }
 

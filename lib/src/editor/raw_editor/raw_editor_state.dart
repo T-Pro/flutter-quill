@@ -377,7 +377,7 @@ class QuillRawEditorState extends EditorState
       // clipboard status to be checked w/o user interaction which fails. Default
       // to pasteable for web.
       if (kIsWeb) {
-        _clipboardStatus = ClipboardStatusNotifier(
+        _clipboardStatus ??= ClipboardStatusNotifier(
           value: ClipboardStatus.pasteable,
         );
       }
@@ -835,6 +835,7 @@ class QuillRawEditorState extends EditorState
     } else {
       // treat iOS Simulator like a keyboard OS
       isIOSSimulator().then((isIosSimulator) {
+        if (!mounted) return;
         if (isIosSimulator) {
           _keyboardVisible = true;
         } else {
@@ -917,8 +918,8 @@ class QuillRawEditorState extends EditorState
     _cursorCont.style = widget.config.cursorStyle;
 
     if (controller != oldWidget.controller) {
-      oldWidget.controller.removeListener(_didChangeTextEditingValue);
-      controller.addListener(_didChangeTextEditingValue);
+      oldWidget.controller.removeListener(_didChangeTextEditingValueListener);
+      controller.addListener(_didChangeTextEditingValueListener);
       updateRemoteValueIfNeeded();
     }
 
@@ -967,10 +968,11 @@ class QuillRawEditorState extends EditorState
     _selectionOverlay?.dispose();
     _selectionOverlay = null;
     controller.removeListener(_didChangeTextEditingValueListener);
-    if (!widget.config.readOnly) {
-      widget.config.focusNode.removeListener(_handleFocusChanged);
-      composingRange.removeListener(_onComposingRangeChanged);
-    }
+    _scrollController.removeListener(_updateSelectionOverlayForScroll);
+    widget.config.focusNode.removeListener(_handleFocusChanged);
+    WidgetsBinding.instance.removeObserver(this);
+    composingRange.dispose();
+    _floatingCursorResetController.dispose();
     _cursorCont.dispose();
     if (_clipboardStatus != null) {
       _clipboardStatus!

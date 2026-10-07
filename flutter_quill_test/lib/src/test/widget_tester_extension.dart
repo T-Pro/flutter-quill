@@ -13,10 +13,10 @@ extension QuillWidgetTesterExt on WidgetTester {
   /// ```
   Future<void> quillGiveFocus(Finder finder) {
     return TestAsyncUtils.guard(() async {
-      final editor = findEditor(finder);
-      editor.widget.focusNode.requestFocus();
+      final focusNode = findRawEditor(finder).widget.config.focusNode
+        ..requestFocus();
       await pump();
-      expect(editor.widget.focusNode.hasFocus, isTrue);
+      expect(focusNode.hasFocus, isTrue);
     });
   }
 
@@ -28,8 +28,7 @@ extension QuillWidgetTesterExt on WidgetTester {
   /// ```
   Future<bool> quillHasFocusEditor(Finder finder) {
     return TestAsyncUtils.guard(() async {
-      final editor = findEditor(finder);
-      return editor.widget.focusNode.hasFocus;
+      return findRawEditor(finder).widget.config.focusNode.hasFocus;
     });
   }
 

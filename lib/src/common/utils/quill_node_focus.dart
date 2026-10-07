@@ -15,9 +15,9 @@ class QuillFocusNode extends FocusNode {
     super.descendantsAreFocusable,
     super.descendantsAreTraversable,
     bool keyboardEnabled = true,
-  }) : _keyboardEnabled = keyboardEnabled;
+  }) : _keyboardEnabled = keyboardEnabled; // ignore: prefer_initializing_formals
 
-  bool _keyboardEnabled = true;
+  bool _keyboardEnabled;
 
   bool get keyboardEnabled => _keyboardEnabled;
 

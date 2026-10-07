@@ -142,9 +142,9 @@ class QuillEditor extends StatefulWidget {
   /// ```
   ///
   QuillEditor({
-    required this.focusNode,
-    required this.scrollController,
     required this.controller,
+    this.focusNode,
+    this.scrollController,
     this.config = const QuillEditorConfig(),
     super.key,
   }) {
@@ -160,15 +160,14 @@ class QuillEditor extends StatefulWidget {
     QuillEditorConfig config = const QuillEditorConfig(),
     FocusNode? focusNode,
     ScrollController? scrollController,
-  }) {
-    return QuillEditor(
-      key: key,
-      scrollController: scrollController ?? ScrollController(),
-      focusNode: focusNode ?? FocusNode(),
-      controller: controller,
-      config: config,
-    );
-  }
+  }) =>
+      QuillEditor(
+        key: key,
+        controller: controller,
+        focusNode: focusNode,
+        scrollController: scrollController,
+        config: config,
+      );
 
   /// Controller object which establishes a link between a rich text document
   /// and this editor.
@@ -178,10 +177,15 @@ class QuillEditor extends StatefulWidget {
   final QuillEditorConfig config;
 
   /// Controls whether this editor has keyboard focus.
-  final FocusNode focusNode;
+  ///
+  /// When null, the editor creates and disposes its own. Use
+  /// [QuillEditorState.focusNode] to access the effective node.
+  final FocusNode? focusNode;
 
   /// The [ScrollController] to use when vertically scrolling the contents.
-  final ScrollController scrollController;
+  ///
+  /// When null, the editor creates and disposes its own.
+  final ScrollController? scrollController;
 
   @override
   QuillEditorState createState() => QuillEditorState();
@@ -202,6 +206,48 @@ class QuillEditorState extends State<QuillEditor>
   /// {@macro drag_offset_notifier}
   final dragOffsetNotifier = isMobileApp ? ValueNotifier<Offset?>(null) : null;
 
+  final _webKeyboardFocusNode = kIsWeb
+      ? FocusNode(
+          onKeyEvent: (node, event) => KeyEventResult.skipRemainingHandlers,
+        )
+      : null;
+
+  FocusNode? _ownFocusNode;
+  ScrollController? _ownScrollController;
+
+  FocusNode get focusNode => widget.focusNode ?? (_ownFocusNode ??= FocusNode());
+
+  ScrollController get scrollController =>
+      widget.scrollController ??
+      (_ownScrollController ??= ScrollController());
+
+  @override
+  void dispose() {
+    focusNode.removeListener(_onFocusChanged);
+    dragOffsetNotifier?.dispose();
+    _webKeyboardFocusNode?.dispose();
+    _ownFocusNode?.dispose();
+    _ownScrollController?.dispose();
+    super.dispose();
+  }
+
+  @override
+  void didUpdateWidget(QuillEditor oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    final oldFocusNode = oldWidget.focusNode ?? _ownFocusNode;
+    if (oldFocusNode != focusNode) {
+      oldFocusNode?.removeListener(_onFocusChanged);
+      focusNode.addListener(_onFocusChanged);
+    }
+  }
+
+  // Hide toolbar when the editor loses focus.
+  void _onFocusChanged() {
+    if (!focusNode.hasFocus) {
+      _editorKey.currentState?.hideToolbar();
+    }
+  }
+
   @override
   void initState() {
     super.initState();
@@ -212,18 +258,11 @@ class QuillEditorState extends State<QuillEditor>
           config.detectWordBoundary,
         );
 
-    final focusNode = widget.focusNode;
-
     if (config.autoFocus) {
       focusNode.requestFocus();
     }
 
-    // Hide toolbar when the editor loses focus.
-    focusNode.addListener(() {
-      if (!focusNode.hasFocus) {
-        _editorKey.currentState?.hideToolbar();
-      }
-    });
+    focusNode.addListener(_onFocusChanged);
   }
 
   @override
@@ -277,8 +316,8 @@ class QuillEditorState extends State<QuillEditor>
         onKeyPressed: widget.config.onKeyPressed,
         customLeadingBuilder: widget.config.customLeadingBlockBuilder,
         showCodeBlockLineNumbers: widget.config.showCodeBlockLineNumbers,
-        focusNode: widget.focusNode,
-        scrollController: widget.scrollController,
+        focusNode: focusNode,
+        scrollController: scrollController,
         scrollable: config.scrollable,
         enableAlwaysIndentOnTab: config.enableAlwaysIndentOnTab,
         scrollBottomInset: config.scrollBottomInset,
@@ -356,9 +395,7 @@ class QuillEditorState extends State<QuillEditor>
       // See issue https://github.com/singerdmx/flutter-quill/issues/304
       return KeyboardListener(
         onKeyEvent: (_) {},
-        focusNode: FocusNode(
-          onKeyEvent: (node, event) => KeyEventResult.skipRemainingHandlers,
-        ),
+        focusNode: _webKeyboardFocusNode!,
         child: editor,
       );
     }
@@ -727,6 +764,13 @@ class RenderEditor extends RenderEditableContainerBox
 
   ValueListenable<bool> get selectionEndInViewport => _selectionEndInViewport;
   final ValueNotifier<bool> _selectionEndInViewport = ValueNotifier<bool>(true);
+
+  @override
+  void dispose() {
+    _selectionStartInViewport.dispose();
+    _selectionEndInViewport.dispose();
+    super.dispose();
+  }
 
   void _updateSelectionExtentsVisibility(Offset effectiveOffset) {
     final visibleRegion = Offset.zero & size;

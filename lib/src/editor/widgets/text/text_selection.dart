@@ -210,8 +210,11 @@ class EditorTextSelectionOverlay {
     if (_handles == null) {
       return;
     }
-    _handles![0].remove();
-    _handles![1].remove();
+    for (final handle in _handles!) {
+      handle
+        ..remove()
+        ..dispose();
+    }
     _handles = null;
   }
 
@@ -221,7 +224,9 @@ class EditorTextSelectionOverlay {
   void hideToolbar() {
     assert(toolbar != null);
     dragOffsetNotifier?.removeListener(_dragOffsetListener);
-    toolbar!.remove();
+    toolbar!
+      ..remove()
+      ..dispose();
     toolbar = null;
   }
 
@@ -355,11 +360,7 @@ class EditorTextSelectionOverlay {
 
   /// Hides the entire overlay including the toolbar and the handles.
   void hide() {
-    if (_handles != null) {
-      _handles![0].remove();
-      _handles![1].remove();
-      _handles = null;
-    }
+    hideHandles();
     if (toolbar != null) {
       hideToolbar();
     }

@@ -1,5 +1,8 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 
+import '../../document/structs/doc_change.dart';
 import '../../l10n/extensions/localizations_ext.dart';
 import '../base_button/base_value_button.dart';
 import '../config/buttons/history_options.dart';
@@ -44,6 +47,7 @@ class QuillToolbarHistoryButton extends QuillToolbarHistoryBaseButton {
 class QuillToolbarHistoryButtonState
     extends QuillToolbarHistoryBaseButtonState {
   var _canPressed = false;
+  StreamSubscription<DocChange>? _changesSubscription;
 
   @override
   String get defaultTooltip =>
@@ -63,9 +67,24 @@ class QuillToolbarHistoryButtonState
     _updateCanPressed(); // Set the init state
 
     // Listen for changes and change it
-    controller.changes.listen((event) async {
+    _changesSubscription?.cancel();
+    _changesSubscription = controller.changes.listen((event) {
       _updateCanPressedWithSetState();
     });
+  }
+
+  @override
+  void didUpdateWidget(QuillToolbarHistoryButton oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.controller != controller) {
+      _listenForChanges();
+    }
+  }
+
+  @override
+  void dispose() {
+    _changesSubscription?.cancel();
+    super.dispose();
   }
 
   @override

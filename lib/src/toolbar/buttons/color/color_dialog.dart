@@ -48,6 +48,12 @@ class ColorPickerDialogState extends State<ColorPickerDialog> {
   }
 
   @override
+  void dispose() {
+    hexController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return AlertDialog(
       title: Text(context.loc.selectColor),

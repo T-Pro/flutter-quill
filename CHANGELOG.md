@@ -10,12 +10,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [11.5.2] - 2026-10-07
+
 ### Added
 
+- `QuillFocusNode`, which can disable the keyboard while the editor keeps focus.
 - Added `QuillEditorConfig.showCodeBlockLineNumbers` (defaults to `true`). When set to `false`, code-block line numbers are hidden and the left gutter shrinks to match the code block's right indent, giving the block symmetric horizontal padding instead of a flush-left edge. `customLeadingBlockBuilder` remains available for finer control and still takes precedence when both are set.
 
 ### Fixed
 
+- Memory leaks in the editor, selection overlay, and toolbar. Notifiers, listeners, and overlay entries the editor creates are now disposed.
+- Crash when a focus retry runs after the editor is disposed.
 - Fixed an issue where bullet points became visually detached from the text body when toggling text direction formatting (RTL) by locking the list leading block to the editor's base text direction.
 - Fixed a brief toolbar flicker when tapping a checkbox: the header, inline, and color buttons momentarily reflected the tapped line's style and the checklist button briefly toggled before the selection was restored. The checkbox tap's gesture-driven caret move is now ignored and the checkbox is formatted silently.
 - Fixed typed text being inserted at the previous caret position on Android after moving the caret with a tap/mouse by keeping the platform IME's editing state in sync with the selection even when the keyboard is hidden.
@@ -36,6 +41,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Depend on the T-Pro `quill_native_bridge` fork with `xclip` removed.
 - Search dialog buttons now adopt the toolbar's `QuillIconTheme`; bar height and spacing tightened.
 - Tightened the code-block leading gutter: its reserved width is now slightly narrower than the ordered-list gutter (by `fontSize / 4`), pulling the right-aligned line number closer to the left edge of the block.
 - Reduced the right-side padding inside the code-block leading container from `fontSize` to `fontSize / 2`, shrinking the gap between the line number and the code text to match ordered/unordered lists.
@@ -226,7 +232,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Apple-specific font dependency for subscript and superscript functionality from the example.
 - **BREAKING**: The [`super_clipboard`](https://pub.dev/packages/super_clipboard) plugin, To restore legacy behavior for `super_clipboard`, use [`flutter_quill_extensions`](https://pub.dev/packages/flutter_quill_extensions) package and `FlutterQuillExtensions.useSuperClipboardPlugin()`.
 
-[unreleased]: https://github.com/singerdmx/flutter-quill/compare/v11.5.1...HEAD
+[unreleased]: https://github.com/singerdmx/flutter-quill/compare/v11.5.2...HEAD
+[11.5.2]: https://github.com/singerdmx/flutter-quill/compare/v11.5.1...v11.5.2
 [11.5.1]: https://github.com/singerdmx/flutter-quill/compare/v10.0.0...v11.5.1
 [11.5.0]: https://github.com/singerdmx/flutter-quill/compare/v10.0.0...v11.5.0
 [11.4.2]: https://github.com/singerdmx/flutter-quill/compare/v10.0.0...v11.4.2

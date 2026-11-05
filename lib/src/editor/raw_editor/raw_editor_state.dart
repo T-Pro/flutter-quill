@@ -1096,7 +1096,9 @@ class QuillRawEditorState extends EditorState
       return;
     }
     if (dirty) {
-      requestKeyboard();
+      // requestKeyboard() on a node that just lost focus asks for it back, so
+      // two dirty editors would trade focus in microtasks forever.
+      if (_hasFocus) requestKeyboard();
       SchedulerBinding.instance
           .addPostFrameCallback((_) => _handleFocusChanged());
       return;

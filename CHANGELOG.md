@@ -10,6 +10,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- App hang and runaway memory when focus moved between two editors that had both changed since their last build. The editor that lost focus took it back, so focus bounced between them forever.
+
 ## [11.5.0] - 2026-10-07
 
 ### Added

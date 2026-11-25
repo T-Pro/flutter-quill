@@ -1016,6 +1016,7 @@ class QuillRawEditorState extends EditorState
     final focusManager = FocusScope.of(context);
     if (!_didAutoFocus && widget.config.autoFocus) {
       await Future.delayed(Duration.zero); // To avoid exceptions
+      if (!mounted) return;
       focusManager.autofocus(widget.config.focusNode);
       _didAutoFocus = true;
     }

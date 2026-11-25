@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_quill/flutter_quill.dart';
 import 'package:flutter_quill_test/flutter_quill_test.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -241,5 +242,318 @@ void main() {
         }
       },
     );
+  });
+
+  group('Magnifier drag offset after dispose', () {
+    testWidgets(
+      'removing the editor in the frame a drag offset arrives does not throw',
+      (tester) async {
+        final controller = QuillController(
+          document: Document()..insert(0, 'Hello world\nSecond line'),
+          selection: const TextSelection.collapsed(offset: 3),
+        );
+        addTearDown(controller.dispose);
+
+        await tester.pumpWidget(
+          QuillTestApp.withScaffold(QuillEditor.basic(controller: controller)),
+        );
+
+        // What a selection handle drag does: it sets the offset the magnifier
+        // follows, and the gesture detector reads it after the frame.
+        final notifier = tester
+            .widget<QuillRawEditor>(find.byType(QuillRawEditor))
+            .dragOffsetNotifier;
+        expect(notifier, isNotNull);
+        notifier!.value = const Offset(20, 20);
+
+        // Remove the editor in that same frame.
+        await tester.pumpWidget(QuillTestApp.home(const SizedBox()));
+
+        expect(tester.takeException(), isNull);
+      },
+      variant: TargetPlatformVariant.only(TargetPlatform.iOS),
+    );
+  });
+
+  group('Floating cursor reset animation after dispose', () {
+    testWidgets(
+      'disposing the editor mid-animation stops the reset animation',
+      (tester) async {
+        final controller = QuillController(
+          document: Document()..insert(0, 'Hello world\nSecond line'),
+          selection: const TextSelection.collapsed(offset: 3),
+        );
+        addTearDown(controller.dispose);
+
+        await tester.pumpWidget(
+          QuillTestApp.withScaffold(QuillEditor.basic(controller: controller)),
+        );
+
+        // A space-bar cursor drag, as iOS sends it.
+        final state =
+            tester.state<QuillRawEditorState>(find.byType(QuillRawEditor))
+              ..updateFloatingCursor(
+                RawFloatingCursorPoint(
+                  offset: Offset.zero,
+                  state: FloatingCursorDragState.Start,
+                ),
+              )
+              ..updateFloatingCursor(
+                RawFloatingCursorPoint(
+                  offset: const Offset(20, 0),
+                  state: FloatingCursorDragState.Update,
+                ),
+              )
+              ..updateFloatingCursor(
+                RawFloatingCursorPoint(state: FloatingCursorDragState.End),
+              );
+        final resetController = state.floatingCursorResetController;
+        expect(resetController.isAnimating, isTrue);
+
+        // Remove the editor before the reset animation finishes.
+        await tester.pump(const Duration(milliseconds: 10));
+        expect(resetController.isAnimating, isTrue);
+        await tester.pumpWidget(QuillTestApp.home(const SizedBox()));
+        expect(resetController.isAnimating, isFalse);
+        await tester.pump(const Duration(milliseconds: 50));
+        await tester.pump(const Duration(milliseconds: 200));
+
+        expect(tester.takeException(), isNull);
+      },
+    );
+  });
+
+  group('Mouse drag-select leaves the magnifier up on iOS/Android', () {
+    testWidgets('no magnifier during or after a mouse drag', (tester) async {
+      final controller = QuillController(
+        document: Document()..insert(0, 'Mouse drag selection'),
+        selection: const TextSelection.collapsed(offset: 0),
+      );
+      await tester.pumpWidget(
+        QuillTestApp.withScaffold(
+          QuillEditor.basic(
+            controller: controller,
+            config: const QuillEditorConfig(
+              quillMagnifierBuilder: defaultQuillMagnifierBuilder,
+            ),
+          ),
+        ),
+      );
+
+      final start =
+          tester.getTopLeft(find.byType(QuillEditor)) + const Offset(10, 10);
+      final gesture = await tester.startGesture(
+        start,
+        kind: PointerDeviceKind.mouse,
+        buttons: kPrimaryMouseButton,
+      );
+      await tester.pump();
+      await gesture.moveTo(start + const Offset(40, 0));
+      await tester.pump(const Duration(milliseconds: 100));
+      await tester.pump();
+      expect(find.byType(QuillMagnifier), findsNothing);
+
+      await gesture.up();
+      await tester.pumpAndSettle();
+      expect(find.byType(QuillMagnifier), findsNothing);
+      expect(controller.selection.isCollapsed, isFalse);
+    }, variant: TargetPlatformVariant.mobile());
+  });
+
+  group('Ordered list numbering', () {
+    List<Map<String, dynamic>> line(String text, Map<String, dynamic> attrs) =>
+        [
+          {'insert': text},
+          {'insert': '\n', 'attributes': attrs},
+        ];
+
+    Future<List<String>> numbersOf(
+      WidgetTester tester,
+      List<Map<String, dynamic>> ops,
+    ) async {
+      final controller = QuillController(
+        document: Document.fromJson(ops),
+        selection: const TextSelection.collapsed(offset: 0),
+      );
+      addTearDown(controller.dispose);
+      await tester.pumpWidget(
+        QuillTestApp.withScaffold(QuillEditor.basic(controller: controller)),
+      );
+      return tester
+          .widgetList<Text>(find.byType(Text))
+          .map((text) => text.data)
+          .whereType<String>()
+          .where((data) => RegExp(r'^[0-9a-z]+\.$').hasMatch(data))
+          .toList();
+    }
+
+    testWidgets('an indented checklist does not restart the outer list', (
+      tester,
+    ) async {
+      final numbers = await numbersOf(tester, [
+        ...line('one', {'list': 'ordered'}),
+        ...line('two', {'list': 'ordered'}),
+        ...line('todo 1', {'list': 'unchecked', 'indent': 1}),
+        ...line('todo 2', {'list': 'unchecked', 'indent': 1}),
+        ...line('three', {'list': 'ordered'}),
+        {'insert': 'paragraph\n'},
+        ...line('new list', {'list': 'ordered'}),
+      ]);
+      expect(numbers, ['1.', '2.', '3.', '1.']);
+    });
+
+    testWidgets('an indented checklist restarts a sublist at its level', (
+      tester,
+    ) async {
+      final numbers = await numbersOf(tester, [
+        ...line('one', {'list': 'ordered'}),
+        ...line('sub 1', {'list': 'ordered', 'indent': 1}),
+        ...line('todo', {'list': 'unchecked', 'indent': 1}),
+        ...line('sub 2', {'list': 'ordered', 'indent': 1}),
+        ...line('two', {'list': 'ordered'}),
+      ]);
+      expect(numbers, ['1.', 'a.', 'a.', '2.']);
+    });
+  });
+
+  group('Mouse drag-select past the bottom of the viewport', () {
+    testWidgets('scrolls down to follow the pointer', (tester) async {
+      final controller = QuillController(
+        document: Document()
+          ..insert(0, List.generate(60, (i) => 'Line $i').join('\n')),
+        selection: const TextSelection.collapsed(offset: 0),
+      );
+      final scrollController = ScrollController();
+      addTearDown(controller.dispose);
+      addTearDown(scrollController.dispose);
+      await tester.pumpWidget(
+        QuillTestApp.withScaffold(
+          SizedBox(
+            height: 300,
+            child: QuillEditor.basic(
+              controller: controller,
+              scrollController: scrollController,
+              config: const QuillEditorConfig(expands: true),
+            ),
+          ),
+        ),
+      );
+
+      final editor = find.byType(QuillEditor);
+      final start = tester.getTopLeft(editor) + const Offset(10, 10);
+      final gesture = await tester.startGesture(
+        start,
+        kind: PointerDeviceKind.mouse,
+        buttons: kPrimaryMouseButton,
+      );
+      await tester.pump();
+      // A sideways move first: the drag recognizer is horizontal, and the
+      // update it accepts on only carries the horizontal part of the move.
+      await gesture.moveBy(const Offset(20, 0));
+      await tester.pump(const Duration(milliseconds: 100));
+      await gesture.moveTo(tester.getBottomLeft(editor) + const Offset(30, -2));
+      await tester.pumpAndSettle();
+      await gesture.moveBy(const Offset(0, 1));
+      await tester.pumpAndSettle();
+      await gesture.up();
+      await tester.pumpAndSettle();
+
+      expect(scrollController.offset, greaterThan(0));
+    });
+
+    // Pumps a mouse drag-select from the top of the editor to [holdAt] and
+    // holds the pointer still there; returns the scroll offset it reached on
+    // arrival and after holding.
+    Future<(double, double)> holdDragAt(
+      WidgetTester tester,
+      ScrollController scrollController,
+      Offset Function(Rect editor) holdAt,
+    ) async {
+      final editor = tester.getRect(find.byType(QuillEditor));
+      final gesture = await tester.startGesture(
+        editor.topLeft + const Offset(10, 10),
+        kind: PointerDeviceKind.mouse,
+        buttons: kPrimaryMouseButton,
+      );
+      await tester.pump();
+      // A sideways move first: the drag recognizer is horizontal, and the
+      // update it accepts on only carries the horizontal part of the move.
+      await gesture.moveBy(const Offset(20, 0));
+      await tester.pump(const Duration(milliseconds: 100));
+      await gesture.moveTo(holdAt(editor));
+      await tester.pump(const Duration(milliseconds: 100));
+      final arrived = scrollController.offset;
+      for (var i = 0; i < 10; i++) {
+        await tester.pump(const Duration(milliseconds: 50));
+      }
+      final held = scrollController.offset;
+      await gesture.up();
+      await tester.pumpAndSettle();
+      return (arrived, held);
+    }
+
+    Future<ScrollController> pumpLongNote(
+      WidgetTester tester, {
+      double scrollBottomInset = 0,
+    }) async {
+      final controller = QuillController(
+        document: Document()
+          ..insert(0, List.generate(200, (i) => 'Line $i').join('\n')),
+        selection: const TextSelection.collapsed(offset: 0),
+        readOnly: true,
+      );
+      final scrollController = ScrollController();
+      addTearDown(controller.dispose);
+      addTearDown(scrollController.dispose);
+      await tester.pumpWidget(
+        QuillTestApp.withScaffold(
+          Align(
+            alignment: Alignment.topCenter,
+            child: SizedBox(
+              height: 300,
+              child: QuillEditor.basic(
+                controller: controller,
+                scrollController: scrollController,
+                config: QuillEditorConfig(
+                  expands: true,
+                  showCursor: false,
+                  scrollBottomInset: scrollBottomInset,
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+      return scrollController;
+    }
+
+    testWidgets('keeps scrolling while the pointer is held at the edge', (
+      tester,
+    ) async {
+      final scrollController = await pumpLongNote(tester);
+      final (arrived, held) = await holdDragAt(
+        tester,
+        scrollController,
+        (editor) => editor.bottomLeft + const Offset(80, -2),
+      );
+      expect(held, greaterThan(arrived + 50));
+    });
+
+    testWidgets('treats the top of a covered bottom as the edge', (
+      tester,
+    ) async {
+      // The pointer is held 40px above the editor's real bottom edge - out of
+      // auto-scroll reach - but inside the 60px drawn over it.
+      final scrollController = await pumpLongNote(
+        tester,
+        scrollBottomInset: 60,
+      );
+      final (arrived, held) = await holdDragAt(
+        tester,
+        scrollController,
+        (editor) => editor.bottomLeft + const Offset(80, -40),
+      );
+      expect(held, greaterThan(arrived + 50));
+    });
   });
 }

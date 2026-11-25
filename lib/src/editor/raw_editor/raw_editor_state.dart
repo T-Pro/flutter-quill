@@ -598,6 +598,12 @@ class QuillRawEditorState extends EditorState
       } else if (oldSelection.extentOffset != selection.extentOffset) {
         bringIntoView(selection.extent);
       }
+      // bringIntoView alone can't scroll down past the bottom, and the reveal
+      // in _didChangeTextEditingValue doesn't run with the cursor hidden or no
+      // keyboard showing, so reveal the drag's moving end here as well.
+      if (selection is DragTextSelection) {
+        _showCaretOnScreen(forDrag: true);
+      }
     }
   }
 
@@ -655,13 +661,18 @@ class QuillRawEditorState extends EditorState
 
     for (final node in doc.root.children) {
       final attrs = node.style.attributes;
+      final isOl = attrs[Attribute.list.key] == Attribute.ol;
+      final int indent = attrs[Attribute.indent.key]?.value ?? 0;
 
-      if (prevNodeOl && attrs[Attribute.list.key] != Attribute.ol ||
-          attrs.isEmpty) {
-        clearIndents = true;
+      // An indented block under an ordered list (e.g. a nested checklist)
+      // belongs to the list item above it, so it does not finish the list.
+      // The deeper levels it interrupts are reset by EditableTextBlock.
+      if (!(prevNodeOl && !isOl && indent > 0)) {
+        if (prevNodeOl && !isOl || attrs.isEmpty) {
+          clearIndents = true;
+        }
+        prevNodeOl = isOl;
       }
-
-      prevNodeOl = attrs[Attribute.list.key] == Attribute.ol;
       final nodeTextDirection = getDirectionOfNode(node, _textDirection);
       if (node is Line) {
         final editableTextLine = _getEditableTextLineFromNode(
@@ -1125,6 +1136,14 @@ class QuillRawEditorState extends EditorState
       // keeps its stale cursor position and inserts typed text there.
       // Does nothing if no input connection is open.
       updateRemoteValueIfNeeded();
+      // Same post-build refresh as _onChangeTextEditingValue, so a selection
+      // made without a keyboard showing (a mouse drag, or a read-only editor,
+      // which never listens for focus changes) still gets its handles.
+      SchedulerBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          _updateOrDisposeSelectionOverlayIfNeeded();
+        }
+      });
       if (mounted) {
         // Use controller.value in build()
         // Mark widget as dirty and trigger build and updateChildren
@@ -1285,8 +1304,12 @@ class QuillRawEditorState extends EditorState
   // selection change so the caret — and the toolbar — stay put.
   bool _ignoreCheckboxTapSelectionChange = false;
 
-  void _showCaretOnScreen() {
-    if (!widget.config.showCursor || _showCaretOnScreenScheduled) {
+  /// [forDrag] reveals a drag-select's moving end even when the cursor is
+  /// hidden (e.g. a read-only editor with `showCursor: false`), so the drag
+  /// can still scroll the editor past its bottom edge.
+  void _showCaretOnScreen({bool forDrag = false}) {
+    if ((!widget.config.showCursor && !forDrag) ||
+        _showCaretOnScreenScheduled) {
       return;
     }
 

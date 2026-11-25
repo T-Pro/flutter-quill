@@ -196,6 +196,14 @@ class EditableTextBlock extends StatelessWidget {
     if (clearIndents) {
       indentLevelCounts.clear();
     }
+    final blockAttrs = block.style.attributes;
+    final int? blockIndent = blockAttrs[Attribute.indent.key]?.value;
+    if (blockIndent != null && blockAttrs[Attribute.list.key] != Attribute.ol) {
+      // Done here, not in the editor loop, because the counts are only
+      // filled when the preceding blocks build: an indented non-ordered block
+      // restarts the ordered levels at or below its indent.
+      indentLevelCounts.removeWhere((level, _) => level >= blockIndent);
+    }
     var index = 0;
     for (final line in Iterable.castFrom<dynamic, Line>(block.children)) {
       index++;

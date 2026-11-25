@@ -19,7 +19,7 @@ jobs:
           # Pinned so a future Flutter/Dart release can't change formatter output
           # and turn the format check below red on unrelated PRs. Bump deliberately
           # alongside a repo-wide reformat (see .git-blame-ignore-revs).
-          flutter-version: 3.44.1
+          flutter-version: 3.47.9
           channel: stable
           cache: true
 

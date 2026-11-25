@@ -1,3 +1,4 @@
+import 'dart:math' as math;
 import 'dart:ui' show lerpDouble;
 
 import 'package:flutter/cupertino.dart';
@@ -292,12 +293,19 @@ mixin RawEditorStateTextInputClientMixin on EditorState
   // The most recent position of the floating cursor.
   Offset? _lastBoundedOffset;
 
+  bool _floatingCursorMoved = false;
+
+  // The selection when the gesture started, to tell a selection sent by the
+  // engine during the gesture from one that was already there.
+  TextSelection? _floatingCursorStartSelection;
+
   // Because the center of the cursor is preferredLineHeight / 2 below the touch
   // origin, but the touch origin is used to determine which line the cursor is
   // on, we need this offset to correctly render and move the cursor.
   Offset _floatingCursorOffset(TextPosition textPosition) =>
       Offset(0, renderEditor.preferredLineHeight(textPosition) / 2);
 
+  // Sending selection updates back to iOS during a move interrupts tracking.
   @override
   void updateFloatingCursor(RawFloatingCursorPoint point) {
     switch (point.state) {
@@ -308,14 +316,31 @@ mixin RawEditorStateTextInputClientMixin on EditorState
         }
         // We want to send in points that are centered around a (0,0) origin, so
         // we cache the position.
-        _pointOffsetOrigin = point.offset;
+        _pointOffsetOrigin = point.offset ?? Offset.zero;
+        _floatingCursorMoved = false;
 
-        final currentTextPosition = TextPosition(
-          offset: renderEditor.selection.baseOffset,
-        );
-        _startCaretRect = renderEditor.getLocalRectForCaret(
-          currentTextPosition,
-        );
+        // Reads the controller: the render object only sees a selection set
+        // in this same frame (e.g. by the previous gesture) at the next frame.
+        final selection = widget.controller.selection;
+        _floatingCursorStartSelection = selection;
+        final startLocation = point.startLocation;
+        final TextPosition currentTextPosition;
+        if (startLocation != null) {
+          currentTextPosition = startLocation.$2;
+          _startCaretRect = Rect.fromCenter(
+            center: startLocation.$1,
+            width: 0,
+            height: 0,
+          );
+        } else {
+          currentTextPosition = TextPosition(
+            offset: selection.isValid ? selection.baseOffset : 0,
+            affinity: selection.affinity,
+          );
+          _startCaretRect = renderEditor.getLocalRectForCaret(
+            currentTextPosition,
+          );
+        }
 
         _lastBoundedOffset =
             _startCaretRect!.center -
@@ -328,7 +353,11 @@ mixin RawEditorStateTextInputClientMixin on EditorState
         );
         break;
       case FloatingCursorDragState.Update:
-        assert(_lastTextPosition != null, 'Last text position was not set');
+        if (_lastTextPosition == null ||
+            _pointOffsetOrigin == null ||
+            _startCaretRect == null) {
+          return;
+        }
         final floatingCursorOffset = _floatingCursorOffset(_lastTextPosition!);
         final centeredPoint = point.offset! - _pointOffsetOrigin!;
         final rawCursorOffset =
@@ -351,20 +380,45 @@ mixin RawEditorStateTextInputClientMixin on EditorState
           _lastBoundedOffset!,
           _lastTextPosition!,
         );
-        final newSelection = TextSelection.collapsed(
-          offset: _lastTextPosition!.offset,
-          affinity: _lastTextPosition!.affinity,
-        );
-        // Setting selection as floating cursor moves will have scroll view
-        // bring background cursor into view
-        renderEditor.onSelectionChanged(
-          newSelection,
-          SelectionChangedCause.forcePress,
-        );
+        _floatingCursorMoved = true;
+        // With the floating cursor disabled nothing else shows the move, so
+        // the caret itself has to follow the finger.
+        if (renderEditor.floatingCursorDisabled) {
+          renderEditor.onSelectionChanged(
+            TextSelection.collapsed(
+              offset: _lastTextPosition!.offset,
+              affinity: _lastTextPosition!.affinity,
+            ),
+            SelectionChangedCause.forcePress,
+          );
+        } else {
+          // Keep the floating cursor visible without touching the selection.
+          bringIntoView(_lastTextPosition!);
+        }
         break;
       case FloatingCursorDragState.End:
         // We skip animation if no update has happened.
-        if (_lastTextPosition != null && _lastBoundedOffset != null) {
+        if (_floatingCursorMoved &&
+            _lastTextPosition != null &&
+            _lastBoundedOffset != null) {
+          // A one-finger move only moves the floating cursor visually; commit
+          // the caret now. With a two-finger (trackpad) selection the engine
+          // already sent the selection, so a non-collapsed selection is kept,
+          // unless it is the one the gesture started with.
+          // Reads the controller: the render object only sees an engine
+          // selection sent in this same frame at the next frame.
+          final selection = widget.controller.selection;
+          if (!selection.isValid ||
+              selection.isCollapsed ||
+              selection == _floatingCursorStartSelection) {
+            renderEditor.onSelectionChanged(
+              TextSelection.collapsed(
+                offset: _lastTextPosition!.offset,
+                affinity: _lastTextPosition!.affinity,
+              ),
+              SelectionChangedCause.forcePress,
+            );
+          }
           floatingCursorResetController
             ..value = 0.0
             ..animateTo(
@@ -372,9 +426,24 @@ mixin RawEditorStateTextInputClientMixin on EditorState
               duration: _floatingCursorResetTime,
               curve: Curves.decelerate,
             );
+        } else {
+          renderEditor.setFloatingCursor(
+            FloatingCursorDragState.End,
+            Offset.zero,
+            const TextPosition(offset: 0),
+          );
+          _resetFloatingCursorState();
         }
         break;
     }
+  }
+
+  void _resetFloatingCursorState() {
+    _startCaretRect = null;
+    _lastTextPosition = null;
+    _pointOffsetOrigin = null;
+    _lastBoundedOffset = null;
+    _floatingCursorMoved = false;
   }
 
   /// Specifies the floating cursor dimensions and position based
@@ -384,28 +453,35 @@ mixin RawEditorStateTextInputClientMixin on EditorState
   /// and repositioned (linear interpolation between position of floating cursor
   /// and current position of background cursor)
   void onFloatingCursorResetTick() {
+    final lastBoundedOffset = _lastBoundedOffset;
+    if (_lastTextPosition == null || lastBoundedOffset == null) return;
+    // The text can get shorter while the animation runs.
+    final lastTextPosition = TextPosition(
+      offset: math.min(
+        _lastTextPosition!.offset,
+        widget.controller.document.length - 1,
+      ),
+      affinity: _lastTextPosition!.affinity,
+    );
     final finalPosition =
-        renderEditor.getLocalRectForCaret(_lastTextPosition!).centerLeft -
-        _floatingCursorOffset(_lastTextPosition!);
+        renderEditor.getLocalRectForCaret(lastTextPosition).centerLeft -
+        _floatingCursorOffset(lastTextPosition);
     if (floatingCursorResetController.isCompleted) {
       renderEditor.setFloatingCursor(
         FloatingCursorDragState.End,
         finalPosition,
-        _lastTextPosition!,
+        lastTextPosition,
       );
-      _startCaretRect = null;
-      _lastTextPosition = null;
-      _pointOffsetOrigin = null;
-      _lastBoundedOffset = null;
+      _resetFloatingCursorState();
     } else {
       final lerpValue = floatingCursorResetController.value;
       final lerpX = lerpDouble(
-        _lastBoundedOffset!.dx,
+        lastBoundedOffset.dx,
         finalPosition.dx,
         lerpValue,
       )!;
       final lerpY = lerpDouble(
-        _lastBoundedOffset!.dy,
+        lastBoundedOffset.dy,
         finalPosition.dy,
         lerpValue,
       )!;
@@ -413,7 +489,7 @@ mixin RawEditorStateTextInputClientMixin on EditorState
       renderEditor.setFloatingCursor(
         FloatingCursorDragState.Update,
         Offset(lerpX, lerpY),
-        _lastTextPosition!,
+        lastTextPosition,
         resetLerpValue: lerpValue,
       );
     }

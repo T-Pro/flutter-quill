@@ -19,6 +19,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - A mouse drag-select now scrolls the editor when it passes the top or bottom edge, including while the pointer is held still there ([singerdmx#2780](https://github.com/singerdmx/flutter-quill/pull/2780)).
 - An indented block (e.g. a checklist) under an ordered list no longer restarts the list's numbering ([singerdmx#2778](https://github.com/singerdmx/flutter-quill/pull/2778)).
 - A mouse drag-select on iOS/Android no longer shows a magnifier that stays up after the button is released ([singerdmx#2777](https://github.com/singerdmx/flutter-quill/pull/2777)).
+- iOS floating cursor (space-bar / trackpad drag) no longer changes the selection on every move, which made the caret land one step behind the finger. The caret is committed once when the gesture ends, two-finger selections from the engine are kept, and the floating cursor is scrolled into view during the drag. With `floatingCursorDisabled: true` the caret still follows the drag ([singerdmx#2772](https://github.com/singerdmx/flutter-quill/pull/2772)).
+- Floating cursor cleanup when a gesture ends without movement, and stale left-edge origin state between gestures ([singerdmx#2772](https://github.com/singerdmx/flutter-quill/pull/2772)).
+- `RenderEditor.getLocalRectForCaret` omitted the horizontal offset of the line (the editor's left padding and the centering of `maxContentWidth`). The floating cursor started left of the caret, and the caret rectangle sent to the platform for input method windows was shifted left. Apps that call `getLocalRectForCaret` and add the padding themselves should stop adding it ([singerdmx#2772](https://github.com/singerdmx/flutter-quill/pull/2772)).
 
 ## [11.6.0] - 2026-09-16
 

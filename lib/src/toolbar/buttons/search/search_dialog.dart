@@ -39,10 +39,9 @@ class QuillToolbarSearchDialogChildBuilderExtraOptions {
   final bool wholeWord;
 }
 
-typedef QuillToolbarSearchDialogChildBuilder =
-    Widget Function(
-      QuillToolbarSearchDialogChildBuilderExtraOptions extraOptions,
-    );
+typedef QuillToolbarSearchDialogChildBuilder = Widget Function(
+  QuillToolbarSearchDialogChildBuilderExtraOptions extraOptions,
+);
 
 class QuillToolbarSearchDialog extends StatefulWidget {
   const QuillToolbarSearchDialog({

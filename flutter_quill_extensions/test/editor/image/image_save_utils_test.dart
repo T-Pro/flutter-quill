@@ -103,18 +103,15 @@ void main() {
         );
       });
 
-      test(
-        'extracts image name from a URL with query parameters and without extension',
-        () {
-          const imageName = 'quill_image';
-          expect(
-            extractImageNameFromImageSource(
-              'https://example.com/path/to/file/$imageName?version=1.2.3',
-            ),
-            equals(imageName),
-          );
-        },
-      );
+      test('extracts image name from a URL with query parameters and without extension', () {
+        const imageName = 'quill_image';
+        expect(
+          extractImageNameFromImageSource(
+            'https://example.com/path/to/file/$imageName?version=1.2.3',
+          ),
+          equals(imageName),
+        );
+      });
 
       test('extracts image name from a URL with query parameters', () {
         const imageName = '2019-Metrology-Events.jpg';
@@ -295,19 +292,16 @@ void main() {
       );
     });
 
-    test(
-      'returns default file name prefix for system save dialog on macOS and Windows',
-      () {
-        for (final platform in {TargetPlatform.macOS, TargetPlatform.windows}) {
-          debugDefaultTargetPlatformOverride = platform;
+    test('returns default file name prefix for system save dialog on macOS and Windows', () {
+      for (final platform in {TargetPlatform.macOS, TargetPlatform.windows}) {
+        debugDefaultTargetPlatformOverride = platform;
 
-          expect(
-            getDefaultImageFileName(isGallerySave: false),
-            defaultImageFileNamePrefix,
-          );
-        }
-      },
-    );
+        expect(
+          getDefaultImageFileName(isGallerySave: false),
+          defaultImageFileNamePrefix,
+        );
+      }
+    });
 
     test('returns unique file name for system save dialog image on Linux', () {
       debugDefaultTargetPlatformOverride = TargetPlatform.linux;
@@ -379,84 +373,53 @@ void main() {
       QuillNativeProvider.instance = mockQuillNativeBridge;
     });
 
-    test(
-      'returns false if gallery save not supported regardless of prefersGallerySave',
-      () async {
-        mockGallerySaveSupported(false);
+    test('returns false if gallery save not supported regardless of prefersGallerySave', () async {
+      mockGallerySaveSupported(false);
 
-        for (final prefersGallerySave in {true, false}) {
-          final result = await shouldSaveToGallery(
-            prefersGallerySave: prefersGallerySave,
-          );
-          expect(result, isFalse);
-          verify(
-            () => mockQuillNativeBridge.isSupported(
-              QuillNativeBridgeFeature.saveImageToGallery,
-            ),
-          ).called(1);
-          verifyNever(
-            () => mockQuillNativeBridge.isSupported(
-              QuillNativeBridgeFeature.saveImage,
-            ),
-          );
-        }
-      },
-    );
+      for (final prefersGallerySave in {true, false}) {
+        final result = await shouldSaveToGallery(
+          prefersGallerySave: prefersGallerySave,
+        );
+        expect(result, isFalse);
+        verify(
+          () => mockQuillNativeBridge.isSupported(
+            QuillNativeBridgeFeature.saveImageToGallery,
+          ),
+        ).called(1);
+        verifyNever(
+          () => mockQuillNativeBridge.isSupported(
+            QuillNativeBridgeFeature.saveImage,
+          ),
+        );
+      }
+    });
 
-    test(
-      'returns false when gallery save is not supported, regardless of if image save is supported',
-      () async {
-        mockGallerySaveSupported(false);
+    test('returns false when gallery save is not supported, regardless of if image save is supported', () async {
+      mockGallerySaveSupported(false);
 
-        for (final isImageSupported in {true, false}) {
-          mockImageSaveSupported(isImageSupported);
+      for (final isImageSupported in {true, false}) {
+        mockImageSaveSupported(isImageSupported);
 
-          final result = await shouldSaveToGallery(prefersGallerySave: true);
+        final result = await shouldSaveToGallery(prefersGallerySave: true);
 
-          expect(result, isFalse);
-          verify(
-            () => mockQuillNativeBridge.isSupported(
-              QuillNativeBridgeFeature.saveImageToGallery,
-            ),
-          ).called(1);
-          verifyNever(
-            () => mockQuillNativeBridge.isSupported(
-              QuillNativeBridgeFeature.saveImage,
-            ),
-          );
-        }
-      },
-    );
+        expect(result, isFalse);
+        verify(
+          () => mockQuillNativeBridge.isSupported(
+            QuillNativeBridgeFeature.saveImageToGallery,
+          ),
+        ).called(1);
+        verifyNever(
+          () => mockQuillNativeBridge.isSupported(
+            QuillNativeBridgeFeature.saveImage,
+          ),
+        );
+      }
+    });
 
-    test(
-      'returns true if gallery save is supported and prefersGallerySave is true',
-      () async {
-        for (final imageSaveSupported in {true, false}) {
-          mockGallerySaveSupported(true);
-          mockImageSaveSupported(imageSaveSupported);
-
-          final result = await shouldSaveToGallery(prefersGallerySave: true);
-
-          expect(result, isTrue);
-          verify(
-            () => mockQuillNativeBridge.isSupported(
-              QuillNativeBridgeFeature.saveImageToGallery,
-            ),
-          ).called(1);
-          verify(
-            () => mockQuillNativeBridge.isSupported(
-              QuillNativeBridgeFeature.saveImage,
-            ),
-          ).called(1);
-        }
-      },
-    );
-
-    test(
-      'returns true when gallery and image save are supported and prefersGallerySave is true',
-      () async {
+    test('returns true if gallery save is supported and prefersGallerySave is true', () async {
+      for (final imageSaveSupported in {true, false}) {
         mockGallerySaveSupported(true);
-        mockImageSaveSupported(true);
+        mockImageSaveSupported(imageSaveSupported);
 
         final result = await shouldSaveToGallery(prefersGallerySave: true);
 
@@ -471,18 +434,80 @@ void main() {
             QuillNativeBridgeFeature.saveImage,
           ),
         ).called(1);
-      },
-    );
+      }
+    });
 
-    test(
-      'returns false when gallery and image save are supported and prefersGallerySave is false',
-      () async {
-        mockGallerySaveSupported(true);
-        mockImageSaveSupported(true);
+    test('returns true when gallery and image save are supported and prefersGallerySave is true', () async {
+      mockGallerySaveSupported(true);
+      mockImageSaveSupported(true);
 
-        final result = await shouldSaveToGallery(prefersGallerySave: false);
+      final result = await shouldSaveToGallery(prefersGallerySave: true);
+
+      expect(result, isTrue);
+      verify(
+        () => mockQuillNativeBridge.isSupported(
+          QuillNativeBridgeFeature.saveImageToGallery,
+        ),
+      ).called(1);
+      verify(
+        () => mockQuillNativeBridge.isSupported(
+          QuillNativeBridgeFeature.saveImage,
+        ),
+      ).called(1);
+    });
+
+    test('returns false when gallery and image save are supported and prefersGallerySave is false', () async {
+      mockGallerySaveSupported(true);
+      mockImageSaveSupported(true);
+
+      final result = await shouldSaveToGallery(prefersGallerySave: false);
+
+      expect(result, isFalse);
+      verify(
+        () => mockQuillNativeBridge.isSupported(
+          QuillNativeBridgeFeature.saveImageToGallery,
+        ),
+      ).called(1);
+      verify(
+        () => mockQuillNativeBridge.isSupported(
+          QuillNativeBridgeFeature.saveImage,
+        ),
+      ).called(1);
+    });
+
+    test('returns false when gallery save is not supported and image save is supported regardless of prefersGallerySave', () async {
+      mockGallerySaveSupported(false);
+      mockImageSaveSupported(true);
+
+      for (final prefersGallerySave in {true, false}) {
+        final result = await shouldSaveToGallery(
+          prefersGallerySave: prefersGallerySave,
+        );
 
         expect(result, isFalse);
+        verify(
+          () => mockQuillNativeBridge.isSupported(
+            QuillNativeBridgeFeature.saveImageToGallery,
+          ),
+        ).called(1);
+        verifyNever(
+          () => mockQuillNativeBridge.isSupported(
+            QuillNativeBridgeFeature.saveImage,
+          ),
+        );
+      }
+    });
+
+    test('returns true when gallery save supported and image save not supported regardless of prefersGallerySave', () async {
+      mockGallerySaveSupported(true);
+      mockImageSaveSupported(false);
+
+      for (final prefersGallerySave in {true, false}) {
+        final result = await shouldSaveToGallery(
+          prefersGallerySave: prefersGallerySave,
+        );
+
+        expect(result, isTrue);
         verify(
           () => mockQuillNativeBridge.isSupported(
             QuillNativeBridgeFeature.saveImageToGallery,
@@ -492,61 +517,9 @@ void main() {
           () => mockQuillNativeBridge.isSupported(
             QuillNativeBridgeFeature.saveImage,
           ),
-        ).called(1);
-      },
-    );
-
-    test(
-      'returns false when gallery save is not supported and image save is supported regardless of prefersGallerySave',
-      () async {
-        mockGallerySaveSupported(false);
-        mockImageSaveSupported(true);
-
-        for (final prefersGallerySave in {true, false}) {
-          final result = await shouldSaveToGallery(
-            prefersGallerySave: prefersGallerySave,
-          );
-
-          expect(result, isFalse);
-          verify(
-            () => mockQuillNativeBridge.isSupported(
-              QuillNativeBridgeFeature.saveImageToGallery,
-            ),
-          ).called(1);
-          verifyNever(
-            () => mockQuillNativeBridge.isSupported(
-              QuillNativeBridgeFeature.saveImage,
-            ),
-          );
-        }
-      },
-    );
-
-    test(
-      'returns true when gallery save supported and image save not supported regardless of prefersGallerySave',
-      () async {
-        mockGallerySaveSupported(true);
-        mockImageSaveSupported(false);
-
-        for (final prefersGallerySave in {true, false}) {
-          final result = await shouldSaveToGallery(
-            prefersGallerySave: prefersGallerySave,
-          );
-
-          expect(result, isTrue);
-          verify(
-            () => mockQuillNativeBridge.isSupported(
-              QuillNativeBridgeFeature.saveImageToGallery,
-            ),
-          ).called(1);
-          verify(
-            () => mockQuillNativeBridge.isSupported(
-              QuillNativeBridgeFeature.saveImage,
-            ),
-          );
-        }
-      },
-    );
+        );
+      }
+    });
   });
 
   group('$ImageSaver', () {
@@ -589,8 +562,7 @@ void main() {
       expect(
         await shouldSaveToGallery(prefersGallerySave: false),
         shouldSaveToGalleryValue,
-        reason:
-            'calling shouldSaveToGallery should return the value specified by mockShouldSaveToGallery',
+        reason: 'calling shouldSaveToGallery should return the value specified by mockShouldSaveToGallery',
       );
     }
 

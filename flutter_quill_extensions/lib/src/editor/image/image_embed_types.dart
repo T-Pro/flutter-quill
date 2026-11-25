@@ -15,8 +15,10 @@ typedef OnRequestPickImage = Future<String?> Function(BuildContext context);
 
 /// A callback will called when inserting a image in the editor
 /// it have the logic that will insert the image block using the controller
-typedef OnImageInsertCallback =
-    Future<void> Function(String image, QuillController controller);
+typedef OnImageInsertCallback = Future<void> Function(
+  String image,
+  QuillController controller,
+);
 
 /// When a new image picked this callback will called and you might want to
 /// do some logic depending on your use case
@@ -41,13 +43,17 @@ class QuillToolbarImageConfig {
   final OnImageInsertCallback? onImageInsertCallback;
 }
 
-typedef ImageEmbedBuilderWillRemoveCallback =
-    Future<bool> Function(String imageUrl);
+typedef ImageEmbedBuilderWillRemoveCallback = Future<bool> Function(
+  String imageUrl,
+);
 
-typedef ImageEmbedBuilderOnRemovedCallback =
-    Future<void> Function(String imageUrl);
+typedef ImageEmbedBuilderOnRemovedCallback = Future<void> Function(
+  String imageUrl,
+);
 
-typedef ImageEmbedBuilderProviderBuilder =
-    ImageProvider? Function(BuildContext context, String imageUrl);
+typedef ImageEmbedBuilderProviderBuilder = ImageProvider? Function(
+  BuildContext context,
+  String imageUrl,
+);
 
 typedef ImageEmbedBuilderErrorWidgetBuilder = ImageErrorWidgetBuilder;

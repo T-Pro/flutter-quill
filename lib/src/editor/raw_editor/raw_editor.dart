@@ -64,8 +64,10 @@ class QuillRawEditor extends StatefulWidget {
 ///
 ///  * [EditableTextContextMenuBuilder], which performs the same role for
 ///    [EditableText]
-typedef QuillEditorContextMenuBuilder =
-    Widget Function(BuildContext context, QuillRawEditorState rawEditorState);
+typedef QuillEditorContextMenuBuilder = Widget Function(
+  BuildContext context,
+  QuillRawEditorState rawEditorState,
+);
 
 @immutable
 class QuillEditorGlyphHeights {

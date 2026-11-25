@@ -58,9 +58,8 @@ class _HomePageState extends State<HomePage> {
               io.Directory.systemTemp.path,
               newFileName,
             );
-            final file = await io.File(
-              newPath,
-            ).writeAsBytes(imageBytes, flush: true);
+            final file = await io.File(newPath)
+                .writeAsBytes(imageBytes, flush: true);
             return file.path;
           },
         ),
@@ -70,8 +69,9 @@ class _HomePageState extends State<HomePage> {
   final QuillFocusNode _editorFocusNode = QuillFocusNode();
   final ScrollController _editorScrollController = ScrollController();
 
-  late final ValueNotifier<bool> _editorFocusNodeEnabled =
-      ValueNotifier(_editorFocusNode.keyboardEnabled);
+  late final ValueNotifier<bool> _editorFocusNodeEnabled = ValueNotifier(
+    _editorFocusNode.keyboardEnabled,
+  );
 
   @override
   void initState() {
@@ -123,10 +123,7 @@ class _HomePageState extends State<HomePage> {
                     shape: BoxShape.circle,
                   ),
                   padding: const EdgeInsets.all(6),
-                  child: Icon(
-                    Icons.edit,
-                    color: iconColor,
-                  ),
+                  child: Icon(Icons.edit, color: iconColor),
                 ),
                 tooltip: 'Toggle edit mode',
                 onPressed: () {

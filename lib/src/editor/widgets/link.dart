@@ -47,12 +47,11 @@ enum LinkMenuAction {
 /// Used internally by widget layer.
 typedef LinkActionPicker = Future<LinkMenuAction> Function(Node linkNode);
 
-typedef LinkActionPickerDelegate =
-    Future<LinkMenuAction> Function(
-      BuildContext context,
-      String link,
-      Node node,
-    );
+typedef LinkActionPickerDelegate = Future<LinkMenuAction> Function(
+  BuildContext context,
+  String link,
+  Node node,
+);
 
 Future<LinkMenuAction> defaultLinkActionPickerDelegate(
   BuildContext context,

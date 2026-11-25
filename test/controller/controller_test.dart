@@ -432,14 +432,12 @@ void main() {
         expect(
           select(2, 11),
           const Style().put(blockAttribute),
-          reason:
-              'selection starts in non-bold text extends into plain on next line',
+          reason: 'selection starts in non-bold text extends into plain on next line',
         );
         expect(
           select(2, 8),
           const Style().put(blockAttribute),
-          reason:
-              'selection starts in non-bold text, extends into bold on next line',
+          reason: 'selection starts in non-bold text, extends into bold on next line',
         );
 
         expect(

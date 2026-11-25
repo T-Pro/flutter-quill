@@ -248,9 +248,8 @@ class _LinkStyleDialogState extends State<LinkStyleDialog> {
         }();
 
     final buttonStyle = widget.buttonSize != null
-        ? Theme.of(context).elevatedButtonTheme.style?.copyWith(
-            fixedSize: WidgetStatePropertyAll(widget.buttonSize),
-          )
+        ? Theme.of(context).elevatedButtonTheme.style
+              ?.copyWith(fixedSize: WidgetStatePropertyAll(widget.buttonSize))
         : widget.dialogTheme?.buttonStyle;
 
     final isWrappable = widget.dialogTheme?.isWrappable ?? false;
@@ -369,7 +368,7 @@ class _LinkStyleDialogState extends State<LinkStyleDialog> {
 
   bool _canPress() => _validateLink(_link) == null;
 
-  String? _validateLink(final String? value) {
+  String? _validateLink(String? value) {
     final input = value ?? '';
 
     final errorMessage = LinkValidator.validate(input)

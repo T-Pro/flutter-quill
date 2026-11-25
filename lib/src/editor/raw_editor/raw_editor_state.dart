@@ -1207,8 +1207,9 @@ class QuillRawEditorState extends EditorState
       // requestKeyboard() on a node that just lost focus asks for it back, so
       // two dirty editors would trade focus in microtasks forever.
       if (_hasFocus) requestKeyboard();
-      SchedulerBinding.instance
-          .addPostFrameCallback((_) => _handleFocusChanged());
+      SchedulerBinding.instance.addPostFrameCallback(
+        (_) => _handleFocusChanged(),
+      );
       return;
     }
     openOrCloseConnection();
@@ -1450,7 +1451,7 @@ class QuillRawEditorState extends EditorState
 
   @override
   bool get shareEnabled => false;
-  
+
   @override
   bool onFocusReceived() => false;
 }

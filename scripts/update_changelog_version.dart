@@ -66,9 +66,8 @@ void _updateChangelogFile({
 }) {
   final changelog = changelogFile.readAsStringSync();
 
-  final newVersionFormattedDate = DateFormat(
-    'yyyy-MM-dd',
-  ).format(DateTime.now());
+  final newVersionFormattedDate = DateFormat('yyyy-MM-dd')
+      .format(DateTime.now());
   final changelogWithUpdateLinks = _updateVersionLinks(
     changeLog: changelog,
     newVersion: newVersion,

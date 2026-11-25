@@ -33,9 +33,9 @@ void main() {
 
           expect(find.widgetWithText(TextFormField, colorHex), findsOneWidget);
 
-          final state =
-              tester.state(find.byType(ColorPickerDialog))
-                  as ColorPickerDialogState;
+          final state = tester.state(
+            find.byType(ColorPickerDialog),
+          ) as ColorPickerDialogState;
 
           final selectedColor = hexToColor(state.hexController.text);
 

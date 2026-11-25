@@ -1,6 +1,7 @@
 // ignore_for_file: avoid_print
 
 import 'dart:io';
+
 import 'package:http/http.dart' as http;
 
 import './update_changelog_version.dart';

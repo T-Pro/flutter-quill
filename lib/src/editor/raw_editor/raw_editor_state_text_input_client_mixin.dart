@@ -114,7 +114,7 @@ mixin RawEditorStateTextInputClientMixin on EditorState
       }
       _textInputConnection!.setEditingState(_lastKnownRemoteTextEditingValue!);
     }
-    // If the keyboard is disabled, only request focus for the editor's focus 
+    // If the keyboard is disabled, only request focus for the editor's focus
     // node and do not open or show the software keyboard.
     if (_keyboardEnabled) {
       _textInputConnection!.show();

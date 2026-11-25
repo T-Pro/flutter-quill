@@ -8,17 +8,16 @@ import '../base_button/base_value_button.dart';
 import '../simple_toolbar.dart';
 import '../theme/quill_icon_theme.dart';
 
-typedef ToggleStyleButtonBuilder =
-    Widget Function(
-      BuildContext context,
-      Attribute attribute,
-      IconData icon,
-      bool? isToggled,
-      VoidCallback? onPressed,
-      VoidCallback? afterPressed, [
-      double iconSize,
-      QuillIconTheme? iconTheme,
-    ]);
+typedef ToggleStyleButtonBuilder = Widget Function(
+  BuildContext context,
+  Attribute attribute,
+  IconData icon,
+  bool? isToggled,
+  VoidCallback? onPressed,
+  VoidCallback? afterPressed, [
+  double iconSize,
+  QuillIconTheme? iconTheme,
+]);
 
 class QuillToolbarToggleStyleButton extends QuillToolbarToggleStyleBaseButton {
   const QuillToolbarToggleStyleButton({

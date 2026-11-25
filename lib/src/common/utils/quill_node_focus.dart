@@ -1,7 +1,6 @@
 import 'package:flutter/widgets.dart';
 
 class QuillFocusNode extends FocusNode {
-
   QuillFocusNode({
     super.debugLabel,
     @Deprecated(
@@ -15,7 +14,8 @@ class QuillFocusNode extends FocusNode {
     super.descendantsAreFocusable,
     super.descendantsAreTraversable,
     bool keyboardEnabled = true,
-  }) : _keyboardEnabled = keyboardEnabled; // ignore: prefer_initializing_formals
+    // ignore: prefer_initializing_formals
+  }) : _keyboardEnabled = keyboardEnabled;
 
   bool _keyboardEnabled;
 

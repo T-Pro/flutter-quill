@@ -26,8 +26,7 @@ void main() {
       expect(
         widget.prefersGallerySave,
         isTrue,
-        reason:
-            'The default of prefersGallerySave should be true for backward compatibility',
+        reason: 'The default of prefersGallerySave should be true for backward compatibility',
       );
     });
     group('save image', () {

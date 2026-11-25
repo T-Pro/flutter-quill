@@ -20,7 +20,8 @@ void main() {
 
       await tester.pumpWidget(
         MaterialApp(
-          localizationsDelegates: FlutterQuillLocalizations.localizationsDelegates,
+          localizationsDelegates:
+              FlutterQuillLocalizations.localizationsDelegates,
           home: Scaffold(
             body: QuillEditor(
               controller: controller,
@@ -51,10 +52,10 @@ void main() {
       addTearDown(controller.dispose);
 
       Widget app() => MaterialApp(
-            localizationsDelegates:
-                FlutterQuillLocalizations.localizationsDelegates,
-            home: QuillEditor.basic(controller: controller),
-          );
+        localizationsDelegates:
+            FlutterQuillLocalizations.localizationsDelegates,
+        home: QuillEditor.basic(controller: controller),
+      );
 
       await tester.pumpWidget(app());
       await tester.pumpWidget(app());

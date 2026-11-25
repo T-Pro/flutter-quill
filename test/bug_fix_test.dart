@@ -64,7 +64,10 @@ void main() {
       setUp(() {
         controller = QuillController.basic();
         focusNode = FocusNode();
-        editor = QuillEditor.basic(controller: controller, focusNode: focusNode);
+        editor = QuillEditor.basic(
+          controller: controller,
+          focusNode: focusNode,
+        );
       });
 
       tearDown(() {
@@ -175,17 +178,41 @@ void main() {
       );
     }
   });
-  group(
-    "2521 - QuillEditor doesn't respect the system keyboard brightness by default on iOS",
-    () {
-      test('keyboardAppearance defaults to null', () {
-        expect(const QuillEditorConfig().keyboardAppearance, null);
-        expect(createFakeRawEditorConfig().keyboardAppearance, null);
-      });
+  group("2521 - QuillEditor doesn't respect the system keyboard brightness by default on iOS", () {
+    test('keyboardAppearance defaults to null', () {
+      expect(const QuillEditorConfig().keyboardAppearance, null);
+      expect(createFakeRawEditorConfig().keyboardAppearance, null);
+    });
 
-      testWidgets('uses the keyboardAppearance from the config if not null', (
-        tester,
-      ) async {
+    testWidgets('uses the keyboardAppearance from the config if not null', (
+      tester,
+    ) async {
+      for (final keyboardAppearanceValue in {
+        Brightness.dark,
+        Brightness.light,
+      }) {
+        final key = GlobalKey<QuillRawEditorState>();
+        await tester.pumpWidget(
+          QuillTestApp.home(
+            QuillRawEditor(
+              key: key,
+              config: createFakeRawEditorConfig(
+                keyboardAppearance: keyboardAppearanceValue,
+              ),
+              controller: QuillController.basic(),
+            ),
+          ),
+        );
+
+        final keyboardAppearance = key.currentState?.createKeyboardAppearance();
+
+        expect(keyboardAppearance, keyboardAppearanceValue);
+      }
+    });
+
+    testWidgets(
+      'uses the keyboardAppearance from the ThemeData if not declared in the config',
+      (tester) async {
         for (final keyboardAppearanceValue in {
           Brightness.dark,
           Brightness.light,
@@ -193,12 +220,16 @@ void main() {
           final key = GlobalKey<QuillRawEditorState>();
           await tester.pumpWidget(
             QuillTestApp.home(
-              QuillRawEditor(
-                key: key,
-                config: createFakeRawEditorConfig(
-                  keyboardAppearance: keyboardAppearanceValue,
+              CupertinoTheme(
+                data: CupertinoThemeData(brightness: keyboardAppearanceValue),
+                child: Theme(
+                  data: ThemeData(brightness: keyboardAppearanceValue),
+                  child: QuillRawEditor(
+                    key: key,
+                    config: createFakeRawEditorConfig(keyboardAppearance: null),
+                    controller: QuillController.basic(),
+                  ),
                 ),
-                controller: QuillController.basic(),
               ),
             ),
           );
@@ -208,41 +239,7 @@ void main() {
 
           expect(keyboardAppearance, keyboardAppearanceValue);
         }
-      });
-
-      testWidgets(
-        'uses the keyboardAppearance from the ThemeData if not declared in the config',
-        (tester) async {
-          for (final keyboardAppearanceValue in {
-            Brightness.dark,
-            Brightness.light,
-          }) {
-            final key = GlobalKey<QuillRawEditorState>();
-            await tester.pumpWidget(
-              QuillTestApp.home(
-                CupertinoTheme(
-                  data: CupertinoThemeData(brightness: keyboardAppearanceValue),
-                  child: Theme(
-                    data: ThemeData(brightness: keyboardAppearanceValue),
-                    child: QuillRawEditor(
-                      key: key,
-                      config: createFakeRawEditorConfig(
-                        keyboardAppearance: null,
-                      ),
-                      controller: QuillController.basic(),
-                    ),
-                  ),
-                ),
-              ),
-            );
-
-            final keyboardAppearance = key.currentState
-                ?.createKeyboardAppearance();
-
-            expect(keyboardAppearance, keyboardAppearanceValue);
-          }
-        },
-      );
-    },
-  );
+      },
+    );
+  });
 }

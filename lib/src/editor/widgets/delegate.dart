@@ -13,8 +13,10 @@ import 'text/text_selection.dart';
 
 typedef CustomStyleBuilder = TextStyle Function(Attribute attribute);
 
-typedef CustomRecognizerBuilder =
-    GestureRecognizer? Function(Attribute attribute, Leaf leaf);
+typedef CustomRecognizerBuilder = GestureRecognizer? Function(
+  Attribute attribute,
+  Leaf leaf,
+);
 
 /// Delegate interface for the [EditorTextSelectionGestureDetectorBuilder].
 ///

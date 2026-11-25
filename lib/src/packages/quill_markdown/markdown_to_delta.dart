@@ -11,12 +11,14 @@ import './embeddable_table_syntax.dart';
 import './utils.dart';
 
 /// Converts markdown [md.Element] to list of [Attribute].
-typedef ElementToAttributeConvertor =
-    List<Attribute<dynamic>> Function(md.Element element);
+typedef ElementToAttributeConvertor = List<Attribute<dynamic>> Function(
+  md.Element element,
+);
 
 /// Converts markdown [md.Element] to [Embeddable].
-typedef ElementToEmbeddableConvertor =
-    Embeddable Function(Map<String, String> elAttrs);
+typedef ElementToEmbeddableConvertor = Embeddable Function(
+  Map<String, String> elAttrs,
+);
 
 /// Convertor from Markdown string to quill [Delta].
 class MarkdownToDelta extends Converter<String, Delta>

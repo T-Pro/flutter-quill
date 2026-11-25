@@ -211,9 +211,8 @@ class AutoExitBlockRule extends InsertRule {
     final nextNewLine = _getNextNewLine(itr);
     if (nextNewLine.operation != null &&
         nextNewLine.operation!.attributes != null &&
-        Style.fromJson(
-              nextNewLine.operation!.attributes,
-            ).getBlockExceptHeader() ==
+        Style.fromJson(nextNewLine.operation!.attributes)
+                .getBlockExceptHeader() ==
             blockStyle) {
       // We are not at the end of this block, ignore.
       return null;
@@ -586,9 +585,8 @@ class PreserveInlineStylesRule extends InsertRule {
               : null;
           if (currData?.startsWith('\n') == true) {
             if (prevData.trimRight().isEmpty) {
-              final back = DeltaIterator(
-                documentDelta,
-              ).skip(index - prevData.length);
+              final back = DeltaIterator(documentDelta)
+                  .skip(index - prevData.length);
 
               /// Prevent link attribute from propagating over line break
               if (back != null &&

@@ -2,8 +2,9 @@ import 'package:meta/meta.dart';
 
 import '../../../../controller/quill_controller.dart' show QuillController;
 
-typedef CharacterShortcutEventHandler =
-    bool Function(QuillController controller);
+typedef CharacterShortcutEventHandler = bool Function(
+  QuillController controller,
+);
 
 /// Defines the implementation of shortcut event based on character.
 @immutable

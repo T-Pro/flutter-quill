@@ -104,11 +104,9 @@ void main() {
           searchEmbedMode: SearchEmbedMode.plainText,
         )
         ..embedBuilders = [const TestTimeStampEmbedBuilderWidget()];
-      expect(
-        document.search('2024'),
-        [7],
-        reason: 'timeStamp embed builder overrides toPlainText',
-      );
+      expect(document.search('2024'), [
+        7,
+      ], reason: 'timeStamp embed builder overrides toPlainText');
       expect(
         document.search('18'),
         [],

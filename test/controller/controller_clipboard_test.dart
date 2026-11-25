@@ -21,38 +21,35 @@ void main() {
         );
     });
 
-    test(
-      'should prioritize delta from onDeltaPaste callback over parsed delta when pasting Delta',
-      () async {
-        var returnComposedDelta = true;
+    test('should prioritize delta from onDeltaPaste callback over parsed delta when pasting Delta', () async {
+      var returnComposedDelta = true;
 
-        controller = QuillController.basic(
-          config: QuillControllerConfig(
-            clipboardConfig: QuillClipboardConfig(
-              onRichTextPaste: (delta, isExternal) async {
-                if (returnComposedDelta) {
-                  return delta.compose(Delta()..insert('composed delta\n'));
-                }
-                return null;
-              },
-            ),
+      controller = QuillController.basic(
+        config: QuillControllerConfig(
+          clipboardConfig: QuillClipboardConfig(
+            onRichTextPaste: (delta, isExternal) async {
+              if (returnComposedDelta) {
+                return delta.compose(Delta()..insert('composed delta\n'));
+              }
+              return null;
+            },
           ),
-        );
+        ),
+      );
 
-        final initialDelta = Delta()..insert('plain text\n', {'bold': true});
+      final initialDelta = Delta()..insert('plain text\n', {'bold': true});
 
-        expect(
-          await controller.getDeltaToPaste(initialDelta),
-          initialDelta.compose(Delta()..insert('composed delta\n')),
-        );
+      expect(
+        await controller.getDeltaToPaste(initialDelta),
+        initialDelta.compose(Delta()..insert('composed delta\n')),
+      );
 
-        returnComposedDelta = false;
+      returnComposedDelta = false;
 
-        final secondDelta = Delta()..insert('plain text\n', {'bold': true});
+      final secondDelta = Delta()..insert('plain text\n', {'bold': true});
 
-        expect(await controller.getDeltaToPaste(secondDelta), secondDelta);
-      },
-    );
+      expect(await controller.getDeltaToPaste(secondDelta), secondDelta);
+    });
 
     test('clipboardSelection empty', () {
       expect(

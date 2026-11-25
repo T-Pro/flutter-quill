@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+
 import '../../../document/attribute.dart';
 import '../../../document/nodes/node.dart';
 import '../../style_widgets/checkbox_point.dart';
@@ -109,9 +110,7 @@ class LeadingConfig {
       // executes n times where n is the number of times you have to add
       // the current roman number value to reach current num.
       builder.write(_romanNumbers[a] * times);
-      num -=
-          times *
-          _arabianRomanNumbers[a]; // subtract previous roman number value from num
+      num -= times * _arabianRomanNumbers[a]; // subtract previous roman number value from num
     }
 
     return builder.toString().toLowerCase();

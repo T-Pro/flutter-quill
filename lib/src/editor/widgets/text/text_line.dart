@@ -716,7 +716,7 @@ class _TextLineState extends State<TextLine> {
     return link;
   }
 
-  void _tapLink(final String? inputLink) {
+  void _tapLink(String? inputLink) {
     var link = inputLink?.trim();
     if (link == null) {
       return;
@@ -1101,9 +1101,9 @@ class RenderEditableTextLine extends RenderEditableBox {
 
   @override
   TextRange getLineBoundary(TextPosition position) {
-    final lineDy = getOffsetForCaret(
-      position,
-    ).translate(0, 0.5 * preferredLineHeight(position)).dy;
+    final lineDy = getOffsetForCaret(position)
+        .translate(0, 0.5 * preferredLineHeight(position))
+        .dy;
     final lineBoxes =
         _getBoxes(TextSelection(baseOffset: 0, extentOffset: line.length - 1))
             .where((element) => element.top < lineDy && element.bottom > lineDy)
@@ -1146,9 +1146,8 @@ class RenderEditableTextLine extends RenderEditableBox {
 
   TextPosition? _getPosition(TextPosition textPosition, double dyScale) {
     assert(textPosition.offset < line.length);
-    final offset = getOffsetForCaret(
-      textPosition,
-    ).translate(0, dyScale * preferredLineHeight(textPosition));
+    final offset = getOffsetForCaret(textPosition)
+        .translate(0, dyScale * preferredLineHeight(textPosition));
     if (_body!.size.contains(
       offset - (_body!.parentData as BoxParentData).offset,
     )) {

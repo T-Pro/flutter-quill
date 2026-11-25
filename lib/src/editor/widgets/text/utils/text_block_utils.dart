@@ -7,26 +7,26 @@ import '../../../../document/nodes/block.dart';
 import '../../../../document/nodes/node.dart';
 import '../../default_styles.dart';
 
-typedef LeadingBlockIndentWidth =
-    HorizontalSpacing Function(
-      Block block,
-      BuildContext context,
-      int count,
-      LeadingBlockNumberPointWidth numberPointWidthDelegate,
-    );
+typedef LeadingBlockIndentWidth = HorizontalSpacing Function(
+  Block block,
+  BuildContext context,
+  int count,
+  LeadingBlockNumberPointWidth numberPointWidthDelegate,
+);
 
-typedef LeadingBlockNumberPointWidth =
-    double Function(double fontSize, int count);
+typedef LeadingBlockNumberPointWidth = double Function(
+  double fontSize,
+  int count,
+);
 
-typedef TextSpanBuilder =
-    InlineSpan Function(
-      BuildContext context,
-      Node node,
-      int nodeOffset,
-      String text,
-      TextStyle? style,
-      GestureRecognizer? recognizer,
-    );
+typedef TextSpanBuilder = InlineSpan Function(
+  BuildContext context,
+  Node node,
+  int nodeOffset,
+  String text,
+  TextStyle? style,
+  GestureRecognizer? recognizer,
+);
 
 TextSpan defaultSpanBuilder(
   BuildContext context,

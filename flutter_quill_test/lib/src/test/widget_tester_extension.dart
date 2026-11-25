@@ -96,8 +96,7 @@ extension QuillWidgetTesterExt on WidgetTester {
     expect(
       selection.isValid,
       isTrue,
-      reason:
-          'The TextSelection passed is not valid to be used for text editing values',
+      reason: 'The TextSelection passed is not valid to be used for text editing values',
     );
     return TestAsyncUtils.guard(() async {
       testTextInput.updateEditingValue(

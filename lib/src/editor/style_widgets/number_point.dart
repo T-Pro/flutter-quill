@@ -1,4 +1,5 @@
 import 'package:flutter/widgets.dart';
+
 import '../../../flutter_quill.dart';
 
 class QuillNumberPoint extends StatelessWidget {

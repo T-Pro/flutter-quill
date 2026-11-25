@@ -1,9 +1,12 @@
 import 'package:meta/meta.dart';
+
 import '../../../../controller/quill_controller.dart';
 import '../../../../document/nodes/leaf.dart';
 
-typedef SpaceShortcutEventHandler =
-    bool Function(QuillText node, QuillController controller);
+typedef SpaceShortcutEventHandler = bool Function(
+  QuillText node,
+  QuillController controller,
+);
 
 /// Defines the implementation of shortcut events for space key calls.
 @immutable

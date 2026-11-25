@@ -10,8 +10,9 @@ enum CameraAction { video, image }
 /// a video using the camera
 ///
 /// by default will show a dialog that ask the user which option he/she wants
-typedef OnRequestCameraActionCallback =
-    Future<CameraAction?> Function(BuildContext context);
+typedef OnRequestCameraActionCallback = Future<CameraAction?> Function(
+  BuildContext context,
+);
 
 @immutable
 class QuillToolbarCameraConfig {

@@ -41,5 +41,7 @@ class QuillToolbarColorButtonOptions
   final QuillToolbarColorPickerOnPressedCallback? customOnPressedCallback;
 }
 
-typedef QuillToolbarColorPickerOnPressedCallback =
-    Future<void> Function(QuillController controller, bool isBackground);
+typedef QuillToolbarColorPickerOnPressedCallback = Future<void> Function(
+  QuillController controller,
+  bool isBackground,
+);

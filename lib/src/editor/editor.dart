@@ -160,14 +160,13 @@ class QuillEditor extends StatefulWidget {
     QuillEditorConfig config = const QuillEditorConfig(),
     FocusNode? focusNode,
     ScrollController? scrollController,
-  }) =>
-      QuillEditor(
-        key: key,
-        controller: controller,
-        focusNode: focusNode,
-        scrollController: scrollController,
-        config: config,
-      );
+  }) => QuillEditor(
+    key: key,
+    controller: controller,
+    focusNode: focusNode,
+    scrollController: scrollController,
+    config: config,
+  );
 
   /// Controller object which establishes a link between a rich text document
   /// and this editor.
@@ -215,11 +214,11 @@ class QuillEditorState extends State<QuillEditor>
   FocusNode? _ownFocusNode;
   ScrollController? _ownScrollController;
 
-  FocusNode get focusNode => widget.focusNode ?? (_ownFocusNode ??= FocusNode());
+  FocusNode get focusNode =>
+      widget.focusNode ?? (_ownFocusNode ??= FocusNode());
 
   ScrollController get scrollController =>
-      widget.scrollController ??
-      (_ownScrollController ??= ScrollController());
+      widget.scrollController ?? (_ownScrollController ??= ScrollController());
 
   @override
   void dispose() {
@@ -684,8 +683,10 @@ class _QuillEditorSelectionGestureDetectorBuilder
 /// (including the cursor location).
 ///
 /// Used by [RenderEditor.onSelectionChanged].
-typedef TextSelectionChangedHandler =
-    void Function(TextSelection selection, SelectionChangedCause cause);
+typedef TextSelectionChangedHandler = void Function(
+  TextSelection selection,
+  SelectionChangedCause cause,
+);
 
 /// Signature for the callback that reports when a selection action is actually
 /// completed and ratified. Completion is defined as when the user input has

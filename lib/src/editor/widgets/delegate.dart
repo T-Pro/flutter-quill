@@ -318,6 +318,92 @@ class EditorTextSelectionGestureDetectorBuilder {
   @protected
   void onDragSelectionStart(DragStartDetails details) {
     renderEditor!.handleDragStart(details);
+    _startDragAutoScroller();
+    _dragPosition = details.globalPosition;
+  }
+
+  /// How close to the editor's top or bottom edge a drag-select has to be
+  /// before the editor starts scrolling on its own.
+  static const double _kDragAutoScrollEdge = 24;
+
+  /// The same speed SelectableRegion scrolls at when a drag-select reaches
+  /// an edge.
+  static const double _kDragAutoScrollVelocityScalar = 30;
+
+  EdgeDraggingAutoScroller? _dragAutoScroller;
+  Offset? _dragPosition;
+
+  // Without this a drag-select only scrolls the editor when the pointer moves,
+  // a line at a time, and not at all while it's held still at an edge it
+  // can't go past (the bottom of the screen).
+  void _startDragAutoScroller() {
+    _stopDragAutoScroller();
+    final controller = editor?.scrollController;
+    if (controller == null || !controller.hasClients) {
+      return;
+    }
+    // The editor's own Scrollable sits below the editor's State, so it can't
+    // be found with Scrollable.maybeOf; its ScrollPosition knows it, though.
+    final scrollable = controller.position.context;
+    if (scrollable is! ScrollableState) {
+      return;
+    }
+    _dragAutoScroller = EdgeDraggingAutoScroller(
+      scrollable,
+      velocityScalar: _kDragAutoScrollVelocityScalar,
+      onScrollViewScrolled: () {
+        final position = _dragPosition;
+        // The editor can be disposed mid-drag without a drag end (its gesture
+        // recognizer is disposed silently); stop rather than scroll on.
+        if (!scrollable.mounted ||
+            position == null ||
+            renderEditor?.attached != true) {
+          _stopDragAutoScroller();
+          return;
+        }
+        renderEditor!.extendSelection(
+          position,
+          cause: SelectionChangedCause.drag,
+        );
+        // The scroller holds its target in content coordinates, so a
+        // pointer held still has to be handed back to it after each step
+        // or it stops once the content has moved past the target.
+        _autoScrollTo(position);
+      },
+    );
+  }
+
+  void _autoScrollTo(Offset globalPosition) {
+    final autoScroller = _dragAutoScroller;
+    if (autoScroller == null) {
+      return;
+    }
+    var target = Rect.fromCenter(
+      center: globalPosition,
+      width: 1,
+      height: _kDragAutoScrollEdge * 2,
+    );
+    // When something is drawn over the editor's bottom (scrollBottomInset),
+    // the pointer can't get near the scroll view's real bottom edge, so treat
+    // the top of the covered part as the edge.
+    final coveredBottom = renderEditor?.scrollBottomInset ?? 0;
+    final viewport =
+        autoScroller.scrollable.context.findRenderObject() as RenderBox?;
+    if (coveredBottom > 0 && viewport != null && viewport.hasSize) {
+      final visibleBottom =
+          viewport.localToGlobal(Offset(0, viewport.size.height)).dy -
+          coveredBottom;
+      if (target.bottom > visibleBottom) {
+        target = target.translate(0, coveredBottom);
+      }
+    }
+    autoScroller.startAutoScrollIfNecessary(target);
+  }
+
+  void _stopDragAutoScroller() {
+    _dragAutoScroller?.stopAutoScroll();
+    _dragAutoScroller = null;
+    _dragPosition = null;
   }
 
   /// Handler for [EditorTextSelectionGestureDetector.onDragSelectionUpdate].
@@ -338,6 +424,8 @@ class EditorTextSelectionGestureDetectorBuilder {
       updateDetails.globalPosition,
       cause: SelectionChangedCause.drag,
     );
+    _dragPosition = updateDetails.globalPosition;
+    _autoScrollTo(updateDetails.globalPosition);
   }
 
   /// Handler for [EditorTextSelectionGestureDetector.onDragSelectionEnd].
@@ -350,6 +438,7 @@ class EditorTextSelectionGestureDetectorBuilder {
   ///  which triggers this callback.
   @protected
   void onDragSelectionEnd(DragEndDetails details) {
+    _stopDragAutoScroller();
     renderEditor!.handleDragEnd(details);
     if (isDesktop &&
         delegate.selectionEnabled &&

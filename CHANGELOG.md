@@ -13,6 +13,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - App hang and runaway memory when focus moved between two editors that had both changed since their last build. The editor that lost focus took it back, so focus bounced between them forever.
+- Crash when the editor was removed in the same frame a selection handle drag moved the magnifier ([singerdmx#2790](https://github.com/singerdmx/flutter-quill/pull/2790)).
+- Copying several lines that end on a list or header line now keeps that line's block format ([singerdmx#2791](https://github.com/singerdmx/flutter-quill/pull/2791)).
+- Regression test for the floating cursor reset animation being stopped when the editor is disposed ([singerdmx#2782](https://github.com/singerdmx/flutter-quill/pull/2782)); the fix itself was already in.
+- A mouse drag-select now scrolls the editor when it passes the top or bottom edge, including while the pointer is held still there ([singerdmx#2780](https://github.com/singerdmx/flutter-quill/pull/2780)).
+- An indented block (e.g. a checklist) under an ordered list no longer restarts the list's numbering ([singerdmx#2778](https://github.com/singerdmx/flutter-quill/pull/2778)).
+- A mouse drag-select on iOS/Android no longer shows a magnifier that stays up after the button is released ([singerdmx#2777](https://github.com/singerdmx/flutter-quill/pull/2777)).
 
 ## [11.6.0] - 2026-09-16
 

@@ -51,8 +51,8 @@ dependencies:
   charcode: ^1.3.0
 
   # Plugins
-  url_launcher: ^6.2.1
-  flutter_keyboard_visibility_temp_fork: ^0.1.1
+  url_launcher: ^6.3.3
+  flutter_keyboard_visibility_temp_fork: ^0.1.6
   quill_native_bridge:
     git:
       url: https://github.com/T-Pro/quill-native-bridge.git

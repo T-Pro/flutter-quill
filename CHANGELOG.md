@@ -14,7 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - App hang and runaway memory when focus moved between two editors that had both changed since their last build. The editor that lost focus took it back, so focus bounced between them forever.
 
-## [11.5.2] - 2026-10-07
+## [11.6.0] - 2026-09-16
 
 ### Added
 
@@ -236,8 +236,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Apple-specific font dependency for subscript and superscript functionality from the example.
 - **BREAKING**: The [`super_clipboard`](https://pub.dev/packages/super_clipboard) plugin, To restore legacy behavior for `super_clipboard`, use [`flutter_quill_extensions`](https://pub.dev/packages/flutter_quill_extensions) package and `FlutterQuillExtensions.useSuperClipboardPlugin()`.
 
-[unreleased]: https://github.com/singerdmx/flutter-quill/compare/v11.5.2...HEAD
-[11.5.2]: https://github.com/singerdmx/flutter-quill/compare/v11.5.1...v11.5.2
+[unreleased]: https://github.com/singerdmx/flutter-quill/compare/v11.6.0...HEAD
+[11.6.0]: https://github.com/singerdmx/flutter-quill/compare/v10.0.0...v11.6.0
 [11.5.1]: https://github.com/singerdmx/flutter-quill/compare/v10.0.0...v11.5.1
 [11.5.0]: https://github.com/singerdmx/flutter-quill/compare/v10.0.0...v11.5.0
 [11.4.2]: https://github.com/singerdmx/flutter-quill/compare/v10.0.0...v11.4.2

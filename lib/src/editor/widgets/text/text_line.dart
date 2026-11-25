@@ -353,6 +353,17 @@ class _TextLineState extends State<TextLine> {
     final composingEnd = widget.composingRange.end - node.documentOffset;
     final text = child.toPlainText();
 
+    // A stale IME composing range can be out of bounds or cut an emoji's
+    // surrogate pair; malformed UTF-16 throws during layout, so skip the
+    // decoration.
+    if (composingStart < 0 ||
+        composingEnd > text.length ||
+        composingStart > composingEnd ||
+        _splitsSurrogatePair(text, composingStart) ||
+        _splitsSurrogatePair(text, composingEnd)) {
+      return [child];
+    }
+
     final textBefore = text.substring(0, composingStart);
     final textComposing = text.substring(composingStart, composingEnd);
     final textAfter = text.substring(composingEnd);
@@ -662,8 +673,14 @@ class _TextLineState extends State<TextLine> {
   }
 
   GestureRecognizer? _getRecognizer(Node segment, bool isLink) {
-    if (_linkRecognizers.containsKey(segment)) {
-      return _linkRecognizers[segment]!;
+    final cachedRecognizer = _linkRecognizers[segment];
+    if (cachedRecognizer != null) {
+      // The link was removed from this leaf: drop its stale link recognizer.
+      if (!isLink && cachedRecognizer is _LinkGestureRecognizer) {
+        _linkRecognizers.remove(segment)?.dispose();
+        return null;
+      }
+      return cachedRecognizer;
     }
 
     if (widget.customRecognizerBuilder != null) {
@@ -685,10 +702,10 @@ class _TextLineState extends State<TextLine> {
 
     if (isLink && canLaunchLinks) {
       if (isDesktop || widget.readOnly) {
-        _linkRecognizers[segment] = TapGestureRecognizer()
+        _linkRecognizers[segment] = _LinkTapGestureRecognizer()
           ..onTap = () => _tapNodeLink(segment);
       } else {
-        _linkRecognizers[segment] = LongPressGestureRecognizer()
+        _linkRecognizers[segment] = _LinkLongPressGestureRecognizer()
           ..onLongPress = () => _longPressLink(segment);
       }
     }
@@ -700,7 +717,7 @@ class _TextLineState extends State<TextLine> {
   }
 
   void _tapNodeLink(Node node) {
-    final link = node.style.attributes[Attribute.link.key]!.value;
+    final link = node.style.attributes[Attribute.link.key]?.value;
 
     _tapLink(link);
   }
@@ -730,7 +747,10 @@ class _TextLineState extends State<TextLine> {
   }
 
   Future<void> _longPressLink(Node node) async {
-    final link = node.style.attributes[Attribute.link.key]!.value!;
+    final link = node.style.attributes[Attribute.link.key]?.value;
+    if (link is! String) {
+      return;
+    }
     final action = await widget.linkActionPicker(node);
     switch (action) {
       case LinkMenuAction.launch:
@@ -769,6 +789,23 @@ class _TextLineState extends State<TextLine> {
         );
   }
 }
+
+/// Whether splitting [text] at [index] leaves a lone UTF-16 surrogate.
+bool _splitsSurrogatePair(String text, int index) =>
+    index > 0 &&
+    index < text.length &&
+    (text.codeUnitAt(index - 1) & 0xFC00) == 0xD800 &&
+    (text.codeUnitAt(index) & 0xFC00) == 0xDC00;
+
+// Marks recognizers created for links, so custom recognizers cached for
+// non-link text are not dropped.
+mixin _LinkGestureRecognizer on GestureRecognizer {}
+
+class _LinkTapGestureRecognizer extends TapGestureRecognizer
+    with _LinkGestureRecognizer {}
+
+class _LinkLongPressGestureRecognizer extends LongPressGestureRecognizer
+    with _LinkGestureRecognizer {}
 
 class EditableTextLine extends RenderObjectWidget {
   const EditableTextLine(
@@ -1091,7 +1128,15 @@ class RenderEditableTextLine extends RenderEditableBox {
       );
     }
     final boxes = _getBoxes(textSelection);
-    assert(boxes.isNotEmpty);
+    if (boxes.isEmpty) {
+      // An edge inside a grapheme cluster (e.g. emoji) yields no boxes;
+      // fall back to the caret offset for that edge.
+      final edge = first ? textSelection.base : textSelection.extent;
+      return TextSelectionPoint(
+        Offset(0, preferredLineHeight(edge)) + getOffsetForCaret(edge),
+        null,
+      );
+    }
     final targetBox = first ? boxes.first : boxes.last;
     return TextSelectionPoint(
       Offset(first ? targetBox.start : targetBox.end, targetBox.bottom),
@@ -1108,6 +1153,10 @@ class RenderEditableTextLine extends RenderEditableBox {
         _getBoxes(TextSelection(baseOffset: 0, extentOffset: line.length - 1))
             .where((element) => element.top < lineDy && element.bottom > lineDy)
             .toList(growable: false);
+    if (lineBoxes.isEmpty) {
+      // Empty line: the [0, 0] selection is collapsed and yields no boxes.
+      return TextRange.collapsed(position.offset);
+    }
     return TextRange(
       start: getPositionForOffset(Offset(lineBoxes.first.left, lineDy)).offset,
       end: getPositionForOffset(Offset(lineBoxes.last.right, lineDy)).offset,
@@ -1486,20 +1535,23 @@ class RenderEditableTextLine extends RenderEditableBox {
       if (enableInteractiveSelection &&
           line.documentOffset <= textSelection.end &&
           textSelection.start <= line.documentOffset + line.length - 1) {
-        final local = localSelection(line, textSelection, false);
-        _selectedRects ??= _body!.getBoxesForSelection(local);
+        if (_selectedRects == null) {
+          final local = localSelection(line, textSelection, false);
+          // The engine may return a fixed-length list, so copy before adding.
+          // Built once per selection so repaints don't stack marker rects.
+          final rects = _body!.getBoxesForSelection(local).toList();
 
-        // Paint a small rect at the start of empty lines that
-        // are contained by the selection.
-        if (line.isEmpty &&
-            textSelection.baseOffset <= line.offset &&
-            textSelection.extentOffset > line.offset) {
-          final lineHeight = preferredLineHeight(
-            TextPosition(offset: line.offset),
-          );
-          _selectedRects?.add(
-            TextBox.fromLTRBD(0, 0, 3, lineHeight, textDirection),
-          );
+          // Paint a small rect at the start of empty lines that
+          // are contained by the selection.
+          if (line.isEmpty &&
+              textSelection.baseOffset <= line.offset &&
+              textSelection.extentOffset > line.offset) {
+            final lineHeight = preferredLineHeight(
+              TextPosition(offset: line.offset),
+            );
+            rects.add(TextBox.fromLTRBD(0, 0, 3, lineHeight, textDirection));
+          }
+          _selectedRects = rects;
         }
 
         _paintSelection(context, effectiveOffset);

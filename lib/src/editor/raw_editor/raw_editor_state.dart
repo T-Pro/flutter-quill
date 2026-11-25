@@ -1073,6 +1073,10 @@ class QuillRawEditorState extends EditorState
 
   @override
   void dispose() {
+    // Detach listeners first so closing the connection can't call back into
+    // a half-disposed state.
+    widget.config.focusNode.removeListener(_handleFocusChanged);
+    composingRange.removeListener(_onComposingRangeChanged);
     closeConnectionIfNeeded();
     _keyboardInsetSettleTimer?.cancel();
     WidgetsBinding.instance.removeObserver(this);
@@ -1083,7 +1087,6 @@ class QuillRawEditorState extends EditorState
     _selectionOverlay = null;
     controller.removeListener(_didChangeTextEditingValueListener);
     _scrollController.removeListener(_updateSelectionOverlayForScroll);
-    widget.config.focusNode.removeListener(_handleFocusChanged);
     WidgetsBinding.instance.removeObserver(this);
     composingRange.dispose();
     _floatingCursorResetController.dispose();

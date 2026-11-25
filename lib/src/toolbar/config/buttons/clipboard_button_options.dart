@@ -4,6 +4,7 @@
 library;
 
 import 'package:meta/meta.dart';
+
 import 'toggle_style_options.dart';
 
 @experimental

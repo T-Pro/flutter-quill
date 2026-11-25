@@ -14,6 +14,7 @@ jobs:
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
         with:
+          flutter-version: 3.47.9
           channel: stable
           cache: true
 
@@ -34,6 +35,7 @@ jobs:
 
       - if: ${{ !cancelled() }}
         name: Run Flutter Analyze Commenter
+        continue-on-error: true
         uses: yorifuji/flutter-analyze-commenter@v1
         with:
           analyze-log: flutter_analyze.log

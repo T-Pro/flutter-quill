@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart' show TextSelection;
 import 'package:flutter_test/flutter_test.dart';
+
 import '../widget_tester_extension.dart';
 
 extension QuillWidgetTesterReplaceExt on WidgetTester {
@@ -20,14 +21,23 @@ extension QuillWidgetTesterReplaceExt on WidgetTester {
   /// find.byType(QuillEditor)
   /// ```
   Future<void> quillReplaceTextWithSelection(
-      Finder finder, String replacement, TextSelection selection) async {
+    Finder finder,
+    String replacement,
+    TextSelection selection,
+  ) async {
     final editor = findRawEditor(finder);
-    expect(selection.isValid, isTrue,
-        reason: 'The selection in the editor is not valid');
+    expect(
+      selection.isValid,
+      isTrue,
+      reason: 'The selection in the editor is not valid',
+    );
     final effectivePlainText = editor.controller.document
         .toPlainText()
         .replaceRange(
-            selection.baseOffset, selection.extentOffset, replacement);
+          selection.baseOffset,
+          selection.extentOffset,
+          replacement,
+        );
     return TestAsyncUtils.guard(() async {
       await quillGiveFocus(finder);
       await quillUpdateEditingValueWithSelection(
@@ -59,12 +69,18 @@ extension QuillWidgetTesterReplaceExt on WidgetTester {
   Future<void> quillReplaceText(Finder finder, String replacement) async {
     final editor = findRawEditor(finder);
     final selection = editor.controller.selection;
-    expect(selection.isValid, isTrue,
-        reason: 'The selection in the editor is not valid');
+    expect(
+      selection.isValid,
+      isTrue,
+      reason: 'The selection in the editor is not valid',
+    );
     final effectivePlainText = editor.controller.document
         .toPlainText()
         .replaceRange(
-            selection.baseOffset, selection.extentOffset, replacement);
+          selection.baseOffset,
+          selection.extentOffset,
+          replacement,
+        );
     return TestAsyncUtils.guard(() async {
       await quillGiveFocus(finder);
       await quillUpdateEditingValueWithSelection(

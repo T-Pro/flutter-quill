@@ -3,6 +3,7 @@ import 'package:flutter_quill/flutter_quill.dart';
 import 'package:flutter_quill/internal.dart';
 
 import 'package:image_picker/image_picker.dart';
+
 import '../../common/default_image_insert.dart';
 import '../../common/default_video_insert.dart';
 import '../quill_simple_toolbar_api.dart';
@@ -20,8 +21,8 @@ class QuillToolbarCameraButton extends QuillToolbarBaseButtonStateless {
     /// over the [baseOptions].
     super.baseOptions,
     super.key,
-  })  : _options = options,
-        super(options: options);
+  }) : _options = options,
+       super(options: options);
 
   final QuillToolbarCameraButtonOptions? _options;
 
@@ -29,10 +30,7 @@ class QuillToolbarCameraButton extends QuillToolbarBaseButtonStateless {
   QuillToolbarCameraButtonOptions? get options => _options;
 
   void _sharedOnPressed(BuildContext context) {
-    _onPressedHandler(
-      context,
-      controller,
-    );
+    _onPressedHandler(context, controller);
     afterButtonPressed(context);
   }
 
@@ -41,9 +39,7 @@ class QuillToolbarCameraButton extends QuillToolbarBaseButtonStateless {
     if (customCallback != null) {
       return await customCallback(context);
     }
-    final cameraAction = await showSelectCameraActionDialog(
-      context: context,
-    );
+    final cameraAction = await showSelectCameraActionDialog(context: context);
 
     return cameraAction;
   }
@@ -60,8 +56,9 @@ class QuillToolbarCameraButton extends QuillToolbarBaseButtonStateless {
 
     switch (cameraAction) {
       case CameraAction.video:
-        final videoFile =
-            await ImagePicker().pickVideo(source: ImageSource.camera);
+        final videoFile = await ImagePicker().pickVideo(
+          source: ImageSource.camera,
+        );
         if (videoFile == null) {
           return;
         }
@@ -73,8 +70,9 @@ class QuillToolbarCameraButton extends QuillToolbarBaseButtonStateless {
               options?.cameraConfig?.onVideoInsertedCallback,
         );
       case CameraAction.image:
-        final imageFile =
-            await ImagePicker().pickImage(source: ImageSource.camera);
+        final imageFile = await ImagePicker().pickImage(
+          source: ImageSource.camera,
+        );
         if (imageFile == null) {
           return;
         }

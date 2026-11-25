@@ -4,10 +4,7 @@ import 'package:meta/meta.dart' show immutable;
 import '../../editor/image/image_embed_types.dart';
 import '../video/config/video.dart';
 
-enum CameraAction {
-  video,
-  image,
-}
+enum CameraAction { video, image }
 
 /// When the user click the camera button, should we take a photo or record
 /// a video using the camera

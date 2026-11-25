@@ -3,7 +3,8 @@ import 'package:meta/meta.dart';
 import '../../../../controller/quill_controller.dart' show QuillController;
 
 typedef CharacterShortcutEventHandler = bool Function(
-    QuillController controller);
+  QuillController controller,
+);
 
 /// Defines the implementation of shortcut event based on character.
 @immutable
@@ -13,8 +14,10 @@ class CharacterShortcutEvent {
     required this.key,
     required this.character,
     required this.handler,
-  }) : assert(character.length == 1 && character != '\n',
-            'character cannot be major than one char, and it must not be a new line');
+  }) : assert(
+         character.length == 1 && character != '\n',
+         'character cannot be major than one char, and it must not be a new line',
+       );
 
   final String key;
   final String character;

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+
 import '../widget_tester_extension.dart';
 
 extension QuillWidgetTesterCursorMovementExtension on WidgetTester {
@@ -23,9 +24,7 @@ extension QuillWidgetTesterCursorMovementExtension on WidgetTester {
       testTextInput.updateEditingValue(
         TextEditingValue(
           text: editor.textEditingValue.text,
-          selection: TextSelection.collapsed(
-            offset: index,
-          ),
+          selection: TextSelection.collapsed(offset: index),
         ),
       );
       await idle();

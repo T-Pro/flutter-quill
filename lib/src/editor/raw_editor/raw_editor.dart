@@ -13,15 +13,20 @@ class QuillRawEditor extends StatefulWidget {
     required this.controller,
     this.dragOffsetNotifier,
     super.key,
-  })  : assert(config.maxHeight == null || config.maxHeight! > 0,
-            'maxHeight cannot be null'),
-        assert(config.minHeight == null || config.minHeight! >= 0,
-            'minHeight cannot be null'),
-        assert(
-            config.maxHeight == null ||
-                config.minHeight == null ||
-                config.maxHeight! >= config.minHeight!,
-            'maxHeight cannot be null');
+  }) : assert(
+         config.maxHeight == null || config.maxHeight! > 0,
+         'maxHeight cannot be null',
+       ),
+       assert(
+         config.minHeight == null || config.minHeight! >= 0,
+         'minHeight cannot be null',
+       ),
+       assert(
+         config.maxHeight == null ||
+             config.minHeight == null ||
+             config.maxHeight! >= config.minHeight!,
+         'maxHeight cannot be null',
+       );
 
   final QuillController controller;
   final QuillRawEditorConfig config;
@@ -66,10 +71,7 @@ typedef QuillEditorContextMenuBuilder = Widget Function(
 
 @immutable
 class QuillEditorGlyphHeights {
-  const QuillEditorGlyphHeights(
-    this.startGlyphHeight,
-    this.endGlyphHeight,
-  );
+  const QuillEditorGlyphHeights(this.startGlyphHeight, this.endGlyphHeight);
 
   final double startGlyphHeight;
   final double endGlyphHeight;

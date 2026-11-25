@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_test/flutter_test.dart';
+
 import '../widget_tester_extension.dart';
 
 extension QuillWidgetTesterInsertionExt on WidgetTester {
@@ -42,13 +43,21 @@ extension QuillWidgetTesterInsertionExt on WidgetTester {
   /// find.byType(QuillEditor)
   /// ```
   Future<void> quillEnterTextAtPosition(
-      Finder finder, String textInsert, int index) async {
-    expect(index, isNonNegative,
-        reason: 'Index passed cannot be less than zero');
+    Finder finder,
+    String textInsert,
+    int index,
+  ) async {
+    expect(
+      index,
+      isNonNegative,
+      reason: 'Index passed cannot be less than zero',
+    );
     final editor = findRawEditor(finder);
-    final plainText = editor.controller.document
-        .toPlainText()
-        .replaceRange(index, index, textInsert);
+    final plainText = editor.controller.document.toPlainText().replaceRange(
+      index,
+      index,
+      textInsert,
+    );
     return TestAsyncUtils.guard(() async {
       await quillGiveFocus(finder);
       await quillUpdateEditingValueWithSelection(

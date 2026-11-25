@@ -4,3 +4,5 @@ analyzer:
   errors:
     # First-party package. Uses flutter_quill experimental and internal APIs on purpose.
     experimental_member_use: ignore
+  exclude:
+    - build/**

@@ -21,8 +21,12 @@ class QuillToolbarColorButtonExtraOptions
   final Color? fillColorBackground;
 }
 
-class QuillToolbarColorButtonOptions extends QuillToolbarBaseButtonOptions<
-    QuillToolbarColorButtonOptions, QuillToolbarColorButtonExtraOptions> {
+class QuillToolbarColorButtonOptions
+    extends
+        QuillToolbarBaseButtonOptions<
+          QuillToolbarColorButtonOptions,
+          QuillToolbarColorButtonExtraOptions
+        > {
   const QuillToolbarColorButtonOptions({
     super.iconSize,
     super.iconButtonFactor,

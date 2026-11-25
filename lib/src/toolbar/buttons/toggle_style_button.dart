@@ -39,8 +39,8 @@ class QuillToolbarToggleStyleButton extends QuillToolbarToggleStyleBaseButton {
 }
 
 class QuillToolbarToggleStyleButtonState
-    extends QuillToolbarToggleStyleBaseButtonState<
-        QuillToolbarToggleStyleButton> {
+    extends
+        QuillToolbarToggleStyleBaseButtonState<QuillToolbarToggleStyleButton> {
   Style get _selectionStyle => controller.getSelectionStyle();
 
   @override
@@ -172,10 +172,7 @@ Widget defaultToggleStyleButtonBuilder(
 ]) {
   final isEnabled = onPressed != null;
   return QuillToolbarIconButton(
-    icon: Icon(
-      icon,
-      size: iconSize * iconButtonFactor,
-    ),
+    icon: Icon(icon, size: iconSize * iconButtonFactor),
     isSelected: isEnabled ? isToggled == true : false,
     onPressed: onPressed,
     afterPressed: afterPressed,

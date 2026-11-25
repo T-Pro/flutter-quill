@@ -61,21 +61,27 @@ void main() {
 
       const uri =
           'content://com.google.android.inputmethod.latin.fileprovider/test.gif';
-      final messageBytes =
-          const JSONMessageCodec().encodeMessage(<String, dynamic>{
+      final messageBytes = const JSONMessageCodec().encodeMessage(<
+        String,
+        dynamic
+      >{
         'args': <dynamic>[
           -1,
           'TextInputAction.commitContent',
           jsonDecode(
-              '{"mimeType": "image/gif", "data": [0,1,0,1,0,1,0,0,0], "uri": "$uri"}'),
+            '{"mimeType": "image/gif", "data": [0,1,0,1,0,1,0,0,0], "uri": "$uri"}',
+          ),
         ],
         'method': 'TextInputClient.performAction',
       });
 
       Object? error;
       try {
-        await tester.binding.defaultBinaryMessenger
-            .handlePlatformMessage('flutter/textinput', messageBytes, (_) {});
+        await tester.binding.defaultBinaryMessenger.handlePlatformMessage(
+          'flutter/textinput',
+          messageBytes,
+          (_) {},
+        );
       } catch (e) {
         error = e;
       }
@@ -160,9 +166,7 @@ void main() {
         final exception = tester.takeException();
         expect(
           exception,
-          isNot(
-            isInstanceOf<MissingFlutterQuillLocalizationException>(),
-          ),
+          isNot(isInstanceOf<MissingFlutterQuillLocalizationException>()),
         );
 
         expect(exception, isNull);
@@ -174,19 +178,14 @@ void main() {
       (tester) async {
         await tester.pumpWidget(
           MaterialApp(
-            home: Builder(
-              builder: (context) => Text(context.loc.font),
-            ),
+            home: Builder(builder: (context) => Text(context.loc.font)),
           ),
         );
 
         final exception = tester.takeException();
 
         expect(exception, isNotNull);
-        expect(
-          exception,
-          isA<MissingFlutterQuillLocalizationException>(),
-        );
+        expect(exception, isA<MissingFlutterQuillLocalizationException>());
       },
     );
 
@@ -197,9 +196,7 @@ void main() {
           MaterialApp(
             localizationsDelegates:
                 FlutterQuillLocalizations.localizationsDelegates,
-            home: Builder(
-              builder: (context) => Text(context.loc.font),
-            ),
+            home: Builder(builder: (context) => Text(context.loc.font)),
           ),
         );
 
@@ -214,80 +211,138 @@ void main() {
     );
 
     testWidgets(
+      'transformLink replaces the default prefix logic when launching a link',
+      (tester) async {
+        controller
+          ..document.insert(0, 'example.com')
+          ..formatText(
+            0,
+            'example.com'.length,
+            const LinkAttribute('example.com'),
+          )
+          ..readOnly = true;
+
+        String? launched;
+        await tester.pumpWidget(
+          MaterialApp(
+            home: QuillEditor.basic(
+              controller: controller,
+              config: QuillEditorConfig(
+                onLaunchUrl: (url) => launched = url,
+                transformLink: (link) => 'custom://$link',
+              ),
+            ),
+          ),
+        );
+        await tester.pump();
+
+        await tester.tapOnText(find.textRange.ofSubstring('example.com'));
+        await tester.pump();
+
+        expect(launched, 'custom://example.com');
+      },
+    );
+
+    testWidgets(
+      'when transformLink is null the default https:// prefix is added',
+      (tester) async {
+        controller
+          ..document.insert(0, 'example.com')
+          ..formatText(
+            0,
+            'example.com'.length,
+            const LinkAttribute('example.com'),
+          )
+          ..readOnly = true;
+
+        String? launched;
+        await tester.pumpWidget(
+          MaterialApp(
+            home: QuillEditor.basic(
+              controller: controller,
+              config: QuillEditorConfig(onLaunchUrl: (url) => launched = url),
+            ),
+          ),
+        );
+        await tester.pump();
+
+        await tester.tapOnText(find.textRange.ofSubstring('example.com'));
+        await tester.pump();
+
+        expect(launched, 'https://example.com');
+      },
+    );
+
+    testWidgets(
       'should throw MissingFlutterQuillLocalizationException if the delegate is not provided',
       (tester) async {
         await tester.pumpWidget(
           MaterialApp(
-            home: Builder(
-              builder: (context) => Text(context.loc.font),
-            ),
+            home: Builder(builder: (context) => Text(context.loc.font)),
           ),
         );
 
         final exception = tester.takeException();
 
         expect(exception, isNotNull);
-        expect(
-          exception,
-          isA<MissingFlutterQuillLocalizationException>(),
-        );
+        expect(exception, isA<MissingFlutterQuillLocalizationException>());
       },
     );
 
-    testWidgets(
-      'does not throw if disposed while a focus retry is pending',
-      (tester) async {
-        final focusNode = FocusNode();
-        final scrollController = ScrollController();
+    testWidgets('does not throw if disposed while a focus retry is pending', (
+      tester,
+    ) async {
+      final focusNode = FocusNode();
+      final scrollController = ScrollController();
 
-        await tester.pumpWidget(
-          MaterialApp(
-            home: QuillEditor(
-              focusNode: focusNode,
-              scrollController: scrollController,
-              controller: controller,
-              config: const QuillEditorConfig(),
-            ),
+      await tester.pumpWidget(
+        MaterialApp(
+          home: QuillEditor(
+            focusNode: focusNode,
+            scrollController: scrollController,
+            controller: controller,
+            config: const QuillEditorConfig(),
           ),
-        );
+        ),
+      );
 
-        focusNode.requestFocus();
-        await tester.pump();
+      focusNode.requestFocus();
+      await tester.pump();
 
-        // Mark the editor dirty without pumping so the next focus
-        // notification schedules a post-frame retry.
-        controller.replaceText(
-          0,
-          0,
-          'hello',
-          const TextSelection.collapsed(offset: 5),
-        );
+      // Mark the editor dirty without pumping so the next focus
+      // notification schedules a post-frame retry.
+      controller.replaceText(
+        0,
+        0,
+        'hello',
+        const TextSelection.collapsed(offset: 5),
+      );
 
-        final editorState =
-            tester.state<QuillRawEditorState>(find.byType(QuillRawEditor));
-        expect(editorState.dirty, isTrue);
+      final editorState = tester.state<QuillRawEditorState>(
+        find.byType(QuillRawEditor),
+      );
+      expect(editorState.dirty, isTrue);
 
-        // Fire the focus listener while dirty so _handleFocusChanged
-        // queues another attempt for the next frame.
-        focusNode.notifyListeners();
+      // Fire the focus listener while dirty so _handleFocusChanged
+      // queues another attempt for the next frame.
+      focusNode.notifyListeners();
 
-        // Dispose the editor but keep the same FocusNode focused so the
-        // queued retry still reaches requestKeyboard() on a dead context.
-        await tester.pumpWidget(
-          MaterialApp(
-            home: Focus(
-              autofocus: true,
-              focusNode: focusNode,
-              child: const SizedBox.shrink(),
-            ),
+      // Dispose the editor but keep the same FocusNode focused so the
+      // queued retry still reaches requestKeyboard() on a dead context.
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Focus(
+            autofocus: true,
+            focusNode: focusNode,
+            child: const SizedBox.shrink(),
           ),
-        );
+        ),
+      );
 
-        expect(tester.takeException(), isNull);
+      expect(tester.takeException(), isNull);
 
-        focusNode.dispose();
-        scrollController.dispose();
-      },
-    );
+      focusNode.dispose();
+      scrollController.dispose();
+    });
   });
 }

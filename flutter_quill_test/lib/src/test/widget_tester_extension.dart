@@ -16,10 +16,7 @@ extension QuillWidgetTesterExt on WidgetTester {
       final focusNode = findRawEditor(finder).widget.config.focusNode
         ..requestFocus();
       await pump();
-      expect(
-        focusNode.hasFocus,
-        isTrue,
-      );
+      expect(focusNode.hasFocus, isTrue);
     });
   }
 
@@ -92,16 +89,18 @@ extension QuillWidgetTesterExt on WidgetTester {
   /// find.byType(QuillEditor)
   /// ```
   Future<void> quillUpdateEditingValueWithSelection(
-      Finder finder, String text, TextSelection selection) async {
-    expect(selection.isValid, isTrue,
-        reason:
-            'The TextSelection passed is not valid to be used for text editing values');
+    Finder finder,
+    String text,
+    TextSelection selection,
+  ) async {
+    expect(
+      selection.isValid,
+      isTrue,
+      reason: 'The TextSelection passed is not valid to be used for text editing values',
+    );
     return TestAsyncUtils.guard(() async {
       testTextInput.updateEditingValue(
-        TextEditingValue(
-          text: text,
-          selection: selection,
-        ),
+        TextEditingValue(text: text, selection: selection),
       );
       await idle();
     });
@@ -129,7 +128,8 @@ extension QuillWidgetTesterExt on WidgetTester {
         TextEditingValue(
           text: text,
           selection: TextSelection.collapsed(
-              offset: editor.textEditingValue.text.length),
+            offset: editor.textEditingValue.text.length,
+          ),
         ),
       );
       await idle();
@@ -153,8 +153,10 @@ extension QuillWidgetTesterExt on WidgetTester {
     return state<QuillRawEditorState>(
       find.descendant(
         of: finder ?? find.byType(QuillEditor),
-        matching: find.byType(QuillRawEditor,
-            skipOffstage: finder?.skipOffstage ?? true),
+        matching: find.byType(
+          QuillRawEditor,
+          skipOffstage: finder?.skipOffstage ?? true,
+        ),
         matchRoot: true,
       ),
     );

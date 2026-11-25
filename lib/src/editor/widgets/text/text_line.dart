@@ -1109,7 +1109,15 @@ class RenderEditableTextLine extends RenderEditableBox {
       );
     }
     final boxes = _getBoxes(textSelection);
-    assert(boxes.isNotEmpty);
+    if (boxes.isEmpty) {
+      // An edge inside a grapheme cluster (e.g. emoji) yields no boxes;
+      // fall back to the caret offset for that edge.
+      final edge = first ? textSelection.base : textSelection.extent;
+      return TextSelectionPoint(
+        Offset(0, preferredLineHeight(edge)) + getOffsetForCaret(edge),
+        null,
+      );
+    }
     final targetBox = first ? boxes.first : boxes.last;
     return TextSelectionPoint(
       Offset(first ? targetBox.start : targetBox.end, targetBox.bottom),
@@ -1126,6 +1134,10 @@ class RenderEditableTextLine extends RenderEditableBox {
         _getBoxes(TextSelection(baseOffset: 0, extentOffset: line.length - 1))
             .where((element) => element.top < lineDy && element.bottom > lineDy)
             .toList(growable: false);
+    if (lineBoxes.isEmpty) {
+      // Empty line: the [0, 0] selection is collapsed and yields no boxes.
+      return TextRange.collapsed(position.offset);
+    }
     return TextRange(
       start: getPositionForOffset(Offset(lineBoxes.first.left, lineDy)).offset,
       end: getPositionForOffset(Offset(lineBoxes.last.right, lineDy)).offset,

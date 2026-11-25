@@ -1,13 +1,13 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_quill/flutter_quill.dart';
 import 'package:flutter_quill_test/flutter_quill_test.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'common/utils/quill_test_app.dart';
 import 'editor/editor_config_utils.dart';
-import 'package:flutter/services.dart';
 
 void main() {
   group('Bug fix', () {

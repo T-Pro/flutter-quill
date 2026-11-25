@@ -1396,7 +1396,7 @@ class RenderEditor extends RenderEditableContainerBox
     final childLocalRect = targetChild.getLocalRectForCaret(localPosition);
 
     final boxParentData = targetChild.parentData as BoxParentData;
-    return childLocalRect.shift(Offset(0, boxParentData.offset.dy));
+    return childLocalRect.shift(boxParentData.offset);
   }
 
   // Start floating cursor
@@ -1512,7 +1512,7 @@ class RenderEditor extends RenderEditableContainerBox
       _resetOriginOnBottom = false;
       _resetOriginOnTop = false;
       _resetOriginOnRight = false;
-      _resetOriginOnBottom = false;
+      _resetOriginOnLeft = false;
     }
     _floatingCursorOn = dragState != FloatingCursorDragState.End;
     if (_floatingCursorOn) {
@@ -1542,7 +1542,7 @@ class RenderEditor extends RenderEditableContainerBox
   }
 
   void _paintFloatingCursor(PaintingContext context, Offset offset) {
-    _floatingCursorPainter.paint(context.canvas);
+    _floatingCursorPainter.paint(context.canvas, offset);
   }
 
   // End floating cursor

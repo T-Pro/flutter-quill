@@ -76,6 +76,13 @@ mixin RawEditorStateTextInputClientMixin on EditorState
       return;
     }
 
+    // An attached connection that is never shown leaves the iPad's native
+    // text-input view over the editor, where it swallows touches.
+    if (!_keyboardEnabled) {
+      closeConnectionIfNeeded();
+      return;
+    }
+
     if (!hasConnection) {
       _lastKnownRemoteTextEditingValue = textEditingValue;
       _textInputConnection = TextInput.attach(
@@ -114,11 +121,7 @@ mixin RawEditorStateTextInputClientMixin on EditorState
       }
       _textInputConnection!.setEditingState(_lastKnownRemoteTextEditingValue!);
     }
-    // If the keyboard is disabled, only request focus for the editor's focus
-    // node and do not open or show the software keyboard.
-    if (_keyboardEnabled) {
-      _textInputConnection!.show();
-    }
+    _textInputConnection!.show();
   }
 
   bool get _keyboardEnabled {

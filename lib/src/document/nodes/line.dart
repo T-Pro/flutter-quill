@@ -618,7 +618,9 @@ base class Line extends QuillContainer<Leaf?> {
     final data = queryChild(offset, false);
     var node = data.node as Leaf?;
 
-    while (len0 > 0) {
+    // Single pass: the nextLine recursion below already walks the rest of the
+    // document, so looping here repeated content when len ran past the end.
+    if (len0 > 0) {
       if (node == null) {
         // blank line
         plainText.write('\n');

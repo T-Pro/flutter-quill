@@ -12,6 +12,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- "Cannot add to a fixed-length list" crash when a selection covers an empty line ([singerdmx#2769](https://github.com/singerdmx/flutter-quill/pull/2769)).
+- Layout crash when an IME composing range is out of bounds or splits an emoji's surrogate pair ([singerdmx#2754](https://github.com/singerdmx/flutter-quill/pull/2754)).
+- Crash when long-pressing or tapping text after its link was removed; the stale link recognizer is now dropped ([singerdmx#2766](https://github.com/singerdmx/flutter-quill/pull/2766)).
+- Crash when a selection edge or an empty line yields no glyph boxes (selection handles, Home/End navigation) ([singerdmx#2751](https://github.com/singerdmx/flutter-quill/pull/2751)).
+- `Document.getPlainText` repeated content when the range ran past the end of the document ([singerdmx#2752](https://github.com/singerdmx/flutter-quill/pull/2752)).
+- The delete rule that keeps video embeds on their own line checked for non-video embeds instead of videos ([singerdmx#2701](https://github.com/singerdmx/flutter-quill/pull/2701)).
+- The editor now removes its focus and composing listeners before closing the input connection on dispose ([singerdmx#2595](https://github.com/singerdmx/flutter-quill/pull/2595)).
+- Delayed autofocus no longer runs after the editor is disposed (related to [singerdmx#2738](https://github.com/singerdmx/flutter-quill/pull/2738); the rest of that PR was already covered).
 - App hang and runaway memory when focus moved between two editors that had both changed since their last build. The editor that lost focus took it back, so focus bounced between them forever.
 - Crash when the editor was removed in the same frame a selection handle drag moved the magnifier ([singerdmx#2790](https://github.com/singerdmx/flutter-quill/pull/2790)).
 - Copying several lines that end on a list or header line now keeps that line's block format ([singerdmx#2791](https://github.com/singerdmx/flutter-quill/pull/2791)).

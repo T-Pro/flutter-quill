@@ -353,6 +353,17 @@ class _TextLineState extends State<TextLine> {
     final composingEnd = widget.composingRange.end - node.documentOffset;
     final text = child.toPlainText();
 
+    // A stale IME composing range can be out of bounds or cut an emoji's
+    // surrogate pair; malformed UTF-16 throws during layout, so skip the
+    // decoration.
+    if (composingStart < 0 ||
+        composingEnd > text.length ||
+        composingStart > composingEnd ||
+        _splitsSurrogatePair(text, composingStart) ||
+        _splitsSurrogatePair(text, composingEnd)) {
+      return [child];
+    }
+
     final textBefore = text.substring(0, composingStart);
     final textComposing = text.substring(composingStart, composingEnd);
     final textAfter = text.substring(composingEnd);
@@ -769,6 +780,13 @@ class _TextLineState extends State<TextLine> {
         );
   }
 }
+
+/// Whether splitting [text] at [index] leaves a lone UTF-16 surrogate.
+bool _splitsSurrogatePair(String text, int index) =>
+    index > 0 &&
+    index < text.length &&
+    (text.codeUnitAt(index - 1) & 0xFC00) == 0xD800 &&
+    (text.codeUnitAt(index) & 0xFC00) == 0xDC00;
 
 class EditableTextLine extends RenderObjectWidget {
   const EditableTextLine(
